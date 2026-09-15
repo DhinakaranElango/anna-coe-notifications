@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Anna University COE Notification Portal</title>
 
-<meta name="theme-color" content="#0878f9">
+<meta
+    name="theme-color"
+    content="#0878f9"
+>
+
+<!-- Apply dark mode BEFORE page is displayed -->
+<script>
+(function(){
+
+    try{
+
+        if(
+            localStorage.getItem("coe-dark") === "1"
+        ){
+
+            document.documentElement.classList.add(
+                "dark"
+            );
+
+        }
+
+    }catch(e){}
+
+})();
+</script>
+
 
 <style>
+
 *{
     box-sizing:border-box;
     margin:0;
@@ -16,570 +48,972 @@
 }
 
 :root{
+
     --blue:#0878f9;
-    --blue2:#075fd1;
+    --blue2:#075dc9;
+
     --bg:#f3f7fc;
     --card:#ffffff;
+
     --text:#172033;
     --muted:#718096;
+
     --border:#e2e8f0;
     --input:#f4f7fb;
-    --shadow:0 8px 28px rgba(25,65,110,.10);
+
+    --shadow:
+        0 8px 28px rgba(30,70,120,.10);
+
 }
 
-body.dark{
+
+/* ================= DARK ================= */
+
+html.dark{
+
     --bg:#0b111b;
     --card:#151e2b;
+
     --text:#f5f7fb;
     --muted:#9ca8b8;
+
     --border:#293548;
     --input:#101823;
-    --shadow:0 8px 28px rgba(0,0,0,.35);
+
+    --shadow:
+        0 8px 28px rgba(0,0,0,.35);
+
 }
 
-html{
-    scroll-behavior:smooth;
-}
 
 body{
-    font-family:Arial,Helvetica,sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     background:var(--bg);
     color:var(--text);
-    transition:background .25s,color .25s;
+
+    transition:
+        background .25s,
+        color .25s;
+
 }
+
 
 /* ================= HEADER ================= */
 
 .header{
-    background:linear-gradient(
-        135deg,
-        #075dc9,
-        #0878f9,
-        #1789ff
-    );
-    color:#fff;
-    padding:18px 16px 62px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #075dc9,
+            #0878f9,
+            #1789ff
+        );
+
+    color:white;
+
+    padding:
+        18px
+        15px
+        62px;
+
     position:relative;
+
     overflow:hidden;
+
 }
+
 
 .header:after{
+
     content:"";
+
     position:absolute;
+
     width:330px;
     height:330px;
+
     border-radius:50%;
-    background:rgba(255,255,255,.07);
+
+    background:
+        rgba(255,255,255,.07);
+
     right:-120px;
-    top:-160px;
+    top:-150px;
+
 }
+
 
 .topbar{
+
     position:relative;
-    z-index:3;
+    z-index:5;
+
     display:flex;
+
     align-items:center;
+
     justify-content:space-between;
+
 }
+
 
 .brand{
+
     display:flex;
+
     align-items:center;
+
     gap:10px;
+
 }
+
 
 .brand-logo{
+
     width:43px;
     height:43px;
+
     border-radius:13px;
-    background:rgba(255,255,255,.16);
+
+    background:
+        rgba(255,255,255,.16);
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     font-size:23px;
+
 }
+
 
 .brand-title{
+
     font-size:16px;
     font-weight:900;
+
 }
+
 
 .brand-sub{
-    font-size:10px;
-    opacity:.82;
+
     margin-top:2px;
+
+    font-size:9px;
+
+    opacity:.82;
+
 }
+
 
 .actions{
+
     display:flex;
-    gap:7px;
+
+    gap:6px;
+
 }
+
 
 .action{
-    width:42px;
-    height:42px;
+
+    width:40px;
+    height:40px;
+
     border-radius:12px;
-    border:1px solid rgba(255,255,255,.22);
-    background:rgba(255,255,255,.13);
-    color:#fff;
+
+    border:
+        1px solid
+        rgba(255,255,255,.25);
+
+    background:
+        rgba(255,255,255,.14);
+
+    color:white;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     text-decoration:none;
-    font-size:20px;
+
+    font-size:19px;
+
     cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
 }
+
 
 .action:active{
-    transform:scale(.94);
+
+    transform:scale(.93);
+
 }
+
 
 .hero{
+
     position:relative;
-    z-index:2;
-    margin-top:30px;
+
+    z-index:3;
+
+    margin-top:29px;
+
 }
+
 
 .hero h1{
-    font-size:38px;
-    line-height:1.08;
+
+    font-size:34px;
+
+    line-height:1.1;
+
     font-weight:900;
+
 }
 
+
 .hero p{
-    margin-top:10px;
-    font-size:13px;
-    line-height:1.45;
+
+    margin-top:9px;
+
+    font-size:12px;
+
+    line-height:1.5;
+
     opacity:.9;
+
 }
+
 
 /* ================= MAIN ================= */
 
 .container{
-    width:min(1100px,calc(100% - 24px));
-    margin:-38px auto 0;
+
+    width:
+        min(
+            1100px,
+            calc(100% - 24px)
+        );
+
+    margin:
+        -38px auto 0;
+
     position:relative;
-    z-index:5;
+
+    z-index:10;
+
 }
+
 
 /* ================= STATS ================= */
 
 .stats{
+
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:9px;
+
 }
+
 
 .stat{
-    min-height:105px;
-    padding:15px;
+
     background:var(--card);
+
     border-radius:17px;
+
+    padding:14px;
+
+    min-height:95px;
+
     box-shadow:var(--shadow);
+
 }
+
 
 .stat-icon{
-    font-size:20px;
+
+    font-size:19px;
+
 }
+
 
 .stat-number{
+
     margin-top:5px;
-    font-size:25px;
+
+    font-size:23px;
+
     font-weight:900;
+
 }
 
+
 .stat-label{
+
     margin-top:3px;
+
     color:var(--muted);
-    font-size:10px;
+
+    font-size:9px;
+
 }
+
 
 /* ================= QUICK LINKS ================= */
 
 .quick-links{
+
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:12px;
-    margin-top:13px;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:10px;
+
+    margin-top:12px;
+
 }
+
 
 .quick{
+
     min-height:82px;
-    background:var(--card);
-    color:var(--text);
-    border:1px solid var(--border);
-    border-radius:17px;
-    padding:14px;
+
     display:flex;
+
     align-items:center;
+
     gap:12px;
+
+    padding:13px;
+
+    background:var(--card);
+
+    color:var(--text);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:17px;
+
     text-decoration:none;
-    box-shadow:0 4px 18px rgba(30,70,120,.05);
-    transition:.2s;
+
+    box-shadow:
+        0 4px 18px
+        rgba(30,70,120,.05);
+
 }
+
 
 .quick:active{
+
     transform:scale(.98);
+
 }
+
 
 .quick-icon{
+
     width:45px;
     height:45px;
+
     flex:none;
+
     border-radius:13px;
+
     background:#edf5ff;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     font-size:22px;
+
 }
 
-body.dark .quick-icon{
+
+html.dark .quick-icon{
+
     background:#202d40;
+
 }
+
 
 .quick-title{
-    font-size:14px;
+
+    font-size:13px;
+
     font-weight:900;
+
 }
 
+
 .quick-sub{
+
     margin-top:4px;
-    font-size:10px;
+
     color:var(--muted);
+
+    font-size:9px;
+
 }
+
+
+/* SERVER STATUS FULL WIDTH */
+
+.quick.server{
+
+    grid-column:
+        1 / -1;
+
+}
+
 
 /* ================= PANEL ================= */
 
 .panel{
-    margin-top:13px;
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:20px;
+
+    margin-top:12px;
+
     padding:14px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:20px;
+
     box-shadow:var(--shadow);
+
 }
+
 
 .panel-head{
+
     display:flex;
-    justify-content:space-between;
+
     align-items:center;
+
+    justify-content:space-between;
+
     gap:10px;
+
 }
+
 
 .panel-title{
+
     font-size:18px;
+
     font-weight:900;
+
 }
+
 
 .panel-sub{
+
     margin-top:4px;
-    font-size:10px;
+
     color:var(--muted);
+
+    font-size:9px;
+
 }
+
 
 .refresh{
-    border:1px solid var(--border);
+
+    border:
+        1px solid
+        var(--border);
+
     background:var(--card);
+
     color:var(--text);
-    padding:9px 12px;
-    border-radius:11px;
+
+    border-radius:10px;
+
+    padding:9px 11px;
+
     font-size:10px;
+
     font-weight:800;
+
     cursor:pointer;
+
 }
 
-.refresh:active{
-    transform:scale(.96);
-}
 
 /* ================= SEARCH ================= */
 
 .search{
+
     position:relative;
-    margin-top:13px;
+
+    margin-top:12px;
+
 }
+
 
 .search-icon{
+
     position:absolute;
+
     left:13px;
     top:11px;
+
     font-size:16px;
+
 }
+
 
 .search input{
+
     width:100%;
+
     height:43px;
-    border:1px solid var(--border);
+
+    border:
+        1px solid
+        var(--border);
+
     border-radius:12px;
+
     background:var(--input);
+
     color:var(--text);
+
     outline:none;
-    padding:0 13px 0 42px;
-    font-size:12px;
+
+    padding:
+        0
+        12px
+        0
+        41px;
+
+    font-size:11px;
+
 }
 
-.search input::placeholder{
-    color:var(--muted);
-}
 
 /* ================= FILTERS ================= */
 
 .filters{
+
     display:flex;
-    gap:8px;
+
+    gap:7px;
+
     overflow-x:auto;
-    padding:10px 0 4px;
+
+    padding:
+        10px
+        0
+        3px;
+
     scrollbar-width:none;
+
 }
+
 
 .filters::-webkit-scrollbar{
+
     display:none;
+
 }
+
 
 .filter{
+
     flex:none;
-    border:1px solid var(--border);
+
+    border:
+        1px solid
+        var(--border);
+
     background:var(--card);
+
     color:var(--text);
+
     border-radius:20px;
-    padding:8px 12px;
-    font-size:10px;
-    cursor:pointer;
+
+    padding:
+        8px
+        12px;
+
+    font-size:9px;
+
     white-space:nowrap;
+
+    cursor:pointer;
+
 }
 
+
 .filter.active{
+
     background:var(--blue);
-    color:#fff;
+
+    color:white;
+
     border-color:var(--blue);
+
 }
+
 
 /* ================= STATUS ================= */
 
 .status{
-    margin:8px 2px 10px;
+
+    margin:
+        8px
+        2px
+        10px;
+
     color:var(--muted);
-    font-size:10px;
+
+    font-size:9px;
+
 }
+
 
 /* ================= NOTIFICATIONS ================= */
 
 .notifications{
+
     display:grid;
-    gap:10px;
+
+    gap:9px;
+
 }
+
 
 .notification{
-    border:1px solid var(--border);
-    border-radius:15px;
-    padding:13px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:14px;
+
+    padding:12px;
+
     background:var(--card);
+
 }
+
 
 .notification-row{
+
     display:flex;
-    gap:10px;
+
+    gap:9px;
+
 }
+
 
 .notification-icon{
-    width:39px;
-    height:39px;
+
+    width:38px;
+    height:38px;
+
     flex:none;
+
     border-radius:11px;
+
     background:#edf5ff;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     font-size:18px;
+
 }
 
-body.dark .notification-icon{
+
+html.dark .notification-icon{
+
     background:#202d40;
+
 }
+
 
 .notification-title{
-    font-size:13px;
+
+    font-size:12px;
+
     font-weight:900;
+
     line-height:1.4;
+
 }
+
 
 .notification-date{
-    margin-top:5px;
+
+    margin-top:4px;
+
     color:var(--muted);
+
     font-size:9px;
+
 }
+
 
 .notification-buttons{
+
     display:flex;
+
     gap:7px;
-    margin-top:11px;
+
+    margin-top:10px;
+
 }
+
 
 .open{
+
+    display:inline-block;
+
     background:var(--blue);
-    color:#fff;
+
+    color:white;
+
     text-decoration:none;
+
     border-radius:9px;
-    padding:8px 11px;
+
+    padding:
+        8px
+        10px;
+
     font-size:9px;
+
     font-weight:800;
+
 }
 
+
 .share{
+
     background:var(--card);
+
     color:var(--text);
-    border:1px solid var(--border);
+
+    border:
+        1px solid
+        var(--border);
+
     border-radius:9px;
-    padding:8px 11px;
+
+    padding:
+        8px
+        10px;
+
     font-size:9px;
+
     font-weight:800;
-    cursor:pointer;
+
 }
+
 
 /* ================= MESSAGE ================= */
 
 .message{
+
     text-align:center;
-    padding:38px 15px;
+
+    padding:
+        35px
+        12px;
+
     color:var(--muted);
-    font-size:11px;
+
+    font-size:10px;
+
 }
+
 
 .message-icon{
-    font-size:34px;
-    margin-bottom:9px;
+
+    font-size:31px;
+
+    margin-bottom:8px;
+
 }
+
 
 .message strong{
+
     color:var(--text);
+
 }
 
+
 .retry{
-    margin-top:13px;
-    border:0;
+
+    margin-top:11px;
+
     background:var(--blue);
-    color:#fff;
-    border-radius:10px;
-    padding:9px 14px;
-    font-size:10px;
+
+    color:white;
+
+    border:0;
+
+    border-radius:9px;
+
+    padding:
+        9px
+        13px;
+
     font-weight:800;
-    cursor:pointer;
+
 }
+
 
 /* ================= SPINNER ================= */
 
 .spinner{
-    width:28px;
-    height:28px;
-    border:4px solid var(--border);
-    border-top-color:var(--blue);
+
+    width:27px;
+    height:27px;
+
+    border:
+        4px solid
+        var(--border);
+
+    border-top-color:
+        var(--blue);
+
     border-radius:50%;
-    margin:0 auto 12px;
-    animation:spin .75s linear infinite;
+
+    margin:
+        0 auto 10px;
+
+    animation:
+        spin .7s linear infinite;
+
 }
 
+
 @keyframes spin{
+
     to{
         transform:rotate(360deg);
     }
+
 }
+
 
 /* ================= FOOTER ================= */
 
 footer{
+
     text-align:center;
-    padding:30px 12px 45px;
+
+    padding:
+        28px
+        10px
+        45px;
+
     color:var(--muted);
+
     font-size:9px;
+
     line-height:2;
+
 }
 
+
 footer a{
+
     color:var(--blue);
+
     text-decoration:none;
+
 }
+
 
 /* ================= MOBILE ================= */
 
 @media(max-width:650px){
 
-    .header{
-        padding:17px 14px 60px;
-    }
-
-    .hero{
-        margin-top:28px;
-    }
-
-    .hero h1{
-        font-size:34px;
-    }
-
-    .hero p{
-        font-size:12px;
-    }
-
-    .stats{
-        gap:8px;
-    }
-
-    .stat{
-        padding:12px 10px;
-        min-height:95px;
-    }
-
-    .stat-number{
-        font-size:22px;
-    }
-
     .quick-links{
-        grid-template-columns:1fr 1fr;
+
+        grid-template-columns:
+            1fr 1fr;
+
     }
 
-    .quick:last-child{
-        grid-column:1 / -1;
-    }
 }
+
 
 @media(max-width:420px){
 
-    .brand-title{
-        font-size:14px;
-    }
+    .hero h1{
 
-    .brand-sub{
-        font-size:9px;
+        font-size:30px;
+
     }
 
     .action{
-        width:39px;
-        height:39px;
-        font-size:18px;
+
+        width:38px;
+        height:38px;
+
     }
 
-    .hero h1{
-        font-size:31px;
+    .brand-title{
+
+        font-size:14px;
+
     }
 
-    .quick-title{
-        font-size:12px;
+    .brand-sub{
+
+        font-size:8px;
+
     }
 
-    .quick-sub{
-        font-size:9px;
-    }
 }
+
 </style>
+
 </head>
 
 
 <body>
 
-<!-- ==================================================
+
+<!-- =================================================
      HEADER
-================================================== -->
+================================================= -->
 
 <header class="header">
 
@@ -608,7 +1042,9 @@ footer a{
 
         <div class="actions">
 
-            <!-- COE ALERTS -->
+
+            <!-- ALERTS -->
+
             <a
                 class="action"
                 href="https://ntfy.sh/anna-coe-dhina-7x9p4k2"
@@ -620,19 +1056,34 @@ footer a{
             </a>
 
 
-            <!-- OFFICIAL TIMETABLE -->
+            <!-- TIMETABLE -->
+
             <a
                 class="action"
                 href="https://aucoe.annauniv.edu/timetable.php"
                 target="_blank"
                 rel="noopener"
-                title="Official Timetable"
+                title="Exam Timetable"
             >
                 📅
             </a>
 
 
+            <!-- ACADEMIC -->
+
+            <a
+                class="action"
+                href="https://cac.annauniv.edu/"
+                target="_blank"
+                rel="noopener"
+                title="Academic Courses"
+            >
+                📚
+            </a>
+
+
             <!-- DARK MODE -->
+
             <button
                 class="action"
                 id="darkButton"
@@ -641,6 +1092,7 @@ footer a{
             >
                 🌙
             </button>
+
 
         </div>
 
@@ -654,8 +1106,9 @@ footer a{
         </h1>
 
         <p>
-            Latest Anna University examination notifications,
-            circulars, results, timetables and important updates.
+            Latest Anna University examination
+            notifications, results, timetables,
+            academic schedules and important updates.
         </p>
 
     </div>
@@ -663,9 +1116,9 @@ footer a{
 </header>
 
 
-<!-- ==================================================
+<!-- =================================================
      MAIN
-================================================== -->
+================================================= -->
 
 <main class="container">
 
@@ -673,6 +1126,7 @@ footer a{
     <!-- STATS -->
 
     <section class="stats">
+
 
         <div class="stat">
 
@@ -684,7 +1138,7 @@ footer a{
                 class="stat-number"
                 id="totalCount"
             >
-                —
+                3
             </div>
 
             <div class="stat-label">
@@ -704,7 +1158,7 @@ footer a{
                 class="stat-number"
                 id="todayCount"
             >
-                —
+                3
             </div>
 
             <div class="stat-label">
@@ -733,17 +1187,18 @@ footer a{
 
         </div>
 
+
     </section>
 
 
-    <!-- ==================================================
+    <!-- =================================================
          QUICK LINKS
-    ================================================== -->
+    ================================================= -->
 
     <section class="quick-links">
 
 
-        <!-- TIMETABLE -->
+        <!-- EXAM TIMETABLE -->
 
         <a
             class="quick"
@@ -775,7 +1230,7 @@ footer a{
 
         <a
             class="quick"
-            href="https://aucoe.annauniv.edu/index.php#"
+            href="https://coe.annauniv.edu/home/index.php"
             target="_blank"
             rel="noopener"
         >
@@ -799,10 +1254,38 @@ footer a{
         </a>
 
 
-        <!-- SERVER STATUS -->
+        <!-- ACADEMIC COURSES -->
 
         <a
             class="quick"
+            href="https://cac.annauniv.edu/"
+            target="_blank"
+            rel="noopener"
+        >
+
+            <div class="quick-icon">
+                📚
+            </div>
+
+            <div>
+
+                <div class="quick-title">
+                    Academic Courses
+                </div>
+
+                <div class="quick-sub">
+                    Schedule • Calendar • Regulations
+                </div>
+
+            </div>
+
+        </a>
+
+
+        <!-- SERVER STATUS -->
+
+        <a
+            class="quick server"
             href="https://dhinakaranelango.github.io/result-server-checker/"
             target="_blank"
             rel="noopener"
@@ -815,25 +1298,27 @@ footer a{
             <div>
 
                 <div class="quick-title">
-                    Server Status Checker
+                    Anna University Server Status Checker
                 </div>
 
                 <div class="quick-sub">
-                    Check Anna University servers
+                    Check Result Server Availability
                 </div>
 
             </div>
 
         </a>
 
+
     </section>
 
 
-    <!-- ==================================================
-         NOTIFICATION PANEL
-    ================================================== -->
+    <!-- =================================================
+         NOTIFICATIONS
+    ================================================= -->
 
     <section class="panel">
+
 
         <div class="panel-head">
 
@@ -844,7 +1329,7 @@ footer a{
                 </div>
 
                 <div class="panel-sub">
-                    Automatically loaded from the notification database
+                    Automatically updated from COE
                 </div>
 
             </div>
@@ -942,41 +1427,28 @@ footer a{
         </div>
 
 
-        <!-- STATUS -->
-
         <div
             class="status"
             id="status"
         >
-            🔄 Checking latest notifications...
+            🟢 Notifications ready
         </div>
 
-
-        <!-- NOTIFICATION LIST -->
 
         <div
             class="notifications"
             id="notifications"
-        >
+        ></div>
 
-            <div class="message">
-
-                <div class="spinner"></div>
-
-                Loading notifications...
-
-            </div>
-
-        </div>
 
     </section>
 
 </main>
 
 
-<!-- ==================================================
+<!-- =================================================
      FOOTER
-================================================== -->
+================================================= -->
 
 <footer>
 
@@ -984,13 +1456,13 @@ footer a{
 
     <br>
 
-    Official Result Website:
+    Result:
     <a
-        href="https://aucoe.annauniv.edu/index.php#"
+        href="https://coe.annauniv.edu/home/index.php"
         target="_blank"
         rel="noopener"
     >
-        aucoe.annauniv.edu
+        Official Result Website
     </a>
 
     <br>
@@ -1006,13 +1478,24 @@ footer a{
 
     <br>
 
-    Server Status:
+    Academic:
+    <a
+        href="https://cac.annauniv.edu/"
+        target="_blank"
+        rel="noopener"
+    >
+        Academic Courses
+    </a>
+
+    <br>
+
+    Server:
     <a
         href="https://dhinakaranelango.github.io/result-server-checker/"
         target="_blank"
         rel="noopener"
     >
-        Anna University Server Status Checker
+        Server Status Checker
     </a>
 
 </footer>
@@ -1021,172 +1504,57 @@ footer a{
 <script>
 
 /* =====================================================
-   COE PORTAL JAVASCRIPT
+   COE PORTAL
 ===================================================== */
 
 "use strict";
 
 
-let allNotifications = [];
-
-let activeFilter = "all";
-
-
 /* =====================================================
-   DARK MODE
+   FALLBACK DATA
+   This means the page NEVER depends on the network
+   just to display notifications.
 ===================================================== */
 
-function updateDarkButton(){
+const fallbackNotifications = [
 
-    const button =
-        document.getElementById("darkButton");
+    {
+        title:
+            "Revaluation Procedure AM26",
 
-    if(!button){
-        return;
+        date:
+            "15-09-2026",
+
+        url:
+            "https://coe.annauniv.edu/aucoe/pdf/2026_am/Revaluation_Procedure_AM26.pdf"
+    },
+
+
+    {
+        title:
+            "Nd26 Except 1st Year Assesment",
+
+        date:
+            "15-09-2026",
+
+        url:
+            "https://coe.annauniv.edu/aucoe/pdf/2026_nd/nd26_except_1st_year_assesment.pdf"
+    },
+
+
+    {
+        title:
+            "AFF AUTO EMIS REG",
+
+        date:
+            "15-09-2026",
+
+        url:
+            "http://coe.annauniv.edu/aucoe/pdf/common/AFF_AUTO_EMIS_REG.pdf"
     }
 
-    if(
-        document.body.classList.contains("dark")
-    ){
-
-        button.textContent = "☀️";
-
-        button.title =
-            "Light Mode";
-
-    }else{
-
-        button.textContent = "🌙";
-
-        button.title =
-            "Dark Mode";
-    }
-}
+];
 
 
-function applySavedDarkMode(){
-
-    try{
-
-        const saved =
-            localStorage.getItem("anna-coe-dark");
-
-        if(saved === "1"){
-
-            document.body.classList.add(
-                "dark"
-            );
-
-        }
-
-    }catch(error){
-
-        console.log(
-            "Storage unavailable"
-        );
-
-    }
-
-    updateDarkButton();
-}
-
-
-function toggleDarkMode(){
-
-    const enabled =
-        document.body.classList.toggle(
-            "dark"
-        );
-
-
-    try{
-
-        localStorage.setItem(
-            "anna-coe-dark",
-            enabled ? "1" : "0"
-        );
-
-    }catch(error){
-
-        console.log(
-            "Could not save dark mode"
-        );
-
-    }
-
-
-    updateDarkButton();
-}
-
-
-/*
- * IMPORTANT:
- * Attach dark mode immediately.
- * It does NOT depend on notification loading.
- */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        applySavedDarkMode();
-
-        const darkButton =
-            document.getElementById(
-                "darkButton"
-            );
-
-        if(darkButton){
-
-            darkButton.onclick =
-                toggleDarkMode;
-
-        }
-
-    }
-);
-
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-function text(value){
-
-    if(
-        value === null ||
-        value === undefined
-    ){
-        return "";
-    }
-
-    return String(value);
-}
-
-
-function normalize(value){
-
-    return text(value)
-        .toLowerCase()
-        .replace(/[_-]+/g," ")
-        .replace(/\s+/g," ")
-        .trim();
-}
-
-
-function titleOf(item){
-
-    let title =
-        text(item.title).trim();
-
-
-    if(
-        !title ||
-        title.toLowerCase() === "click here"
-    ){
-
-        if(item.url){
-
-            const filename =
-                text(item.url)
- 
+let allNotifications =
+    fallbackNotific
