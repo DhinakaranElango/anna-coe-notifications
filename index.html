@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Anna University COE Notifications</title>
 
   <style>
@@ -14,13 +15,13 @@
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f4f6f9;
-      color: #222;
+      color: #172033;
     }
 
     header {
       background: #172554;
       color: white;
-      padding: 25px 16px;
+      padding: 28px 16px;
       text-align: center;
     }
 
@@ -36,52 +37,60 @@
 
     .container {
       max-width: 900px;
-      margin: 20px auto;
-      padding: 0 15px;
+      margin: auto;
+      padding: 20px 15px;
     }
 
-    .status {
+    .top-card {
       background: white;
+      padding: 16px;
       border-radius: 12px;
-      padding: 15px;
       margin-bottom: 15px;
       box-shadow: 0 2px 8px #0001;
     }
 
     .search {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 9px;
       font-size: 16px;
+      outline: none;
     }
 
     .notification {
       background: white;
-      margin: 12px 0;
       padding: 18px;
+      margin: 14px 0;
       border-radius: 12px;
       box-shadow: 0 2px 8px #0001;
     }
 
     .notification h2 {
+      margin: 5px 0 8px;
       font-size: 18px;
-      margin: 0 0 8px;
     }
 
     .date {
-      color: #666;
+      color: #667085;
       font-size: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    .notification a {
+    .source {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+
+    .open-btn {
       display: inline-block;
       background: #172554;
       color: white;
-      text-decoration: none;
-      padding: 9px 14px;
+      padding: 10px 15px;
       border-radius: 7px;
+      text-decoration: none;
     }
 
     .new {
@@ -90,14 +99,22 @@
       color: white;
       padding: 4px 8px;
       border-radius: 5px;
-      font-size: 12px;
-      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .loading,
+    .empty,
+    .error {
+      text-align: center;
+      padding: 30px 15px;
+      color: #667085;
     }
 
     footer {
       text-align: center;
       padding: 30px 15px;
-      color: #666;
+      color: #667085;
       font-size: 13px;
     }
   </style>
@@ -112,54 +129,198 @@
 
 <div class="container">
 
-  <div class="status">
-    🔄 <strong>Notification Portal</strong>
+  <div class="top-card">
+    🔔 <strong>COE Notification Portal</strong>
     <br>
-    <small>Updates are collected from the official Anna University COE website.</small>
+    <small>
+      Automatically updated from the official Anna University COE website.
+    </small>
   </div>
 
-  <input
-    type="text"
-    id="search"
-    class="search"
-    placeholder="🔎 Search notifications..."
-  >
+  <div class="top-card">
+    <input
+      id="search"
+      class="search"
+      type="search"
+      placeholder="🔎 Search notifications..."
+    >
+  </div>
+
+  <div id="status" class="top-card">
+    🔄 Loading notifications...
+  </div>
 
   <div id="notifications">
-    <div class="notification">
-      <span class="new">LATEST</span>
-      <h2>Anna University COE Notifications</h2>
-      <div class="date">Visit the official COE website for the latest updates.</div>
-      <a
-        href="https://coe.annauniv.edu/home/index.php"
-        target="_blank"
-        rel="noopener"
-      >
-        Open Official COE Website
-      </a>
+    <div class="loading">
+      Loading latest COE notifications...
     </div>
   </div>
 
 </div>
 
 <footer>
-  This is an independent notification portal.<br>
-  Official source: Anna University Controller of Examinations
+  Independent notification portal<br>
+  Official source:
+  <a
+    href="https://coe.annauniv.edu/home/index.php"
+    target="_blank"
+    rel="noopener"
+  >
+    Anna University COE
+  </a>
 </footer>
 
 <script>
-  const search = document.getElementById("search");
 
-  search.addEventListener("input", function () {
-    const text = this.value.toLowerCase();
+let allNotifications = [];
 
-    document.querySelectorAll(".notification").forEach(card => {
-      card.style.display =
-        card.innerText.toLowerCase().includes(text)
-          ? "block"
-          : "none";
-    });
-  });
+async function loadNotifications() {
+
+  const status = document.getElementById("status");
+  const container = document.getElementById("notifications");
+
+  try {
+
+    const response = await fetch(
+      "data/notifications.json?t=" + Date.now()
+    );
+
+    if (!response.ok) {
+      throw new Error("Unable to load notification data");
+    }
+
+    allNotifications = await response.json();
+
+    status.innerHTML =
+      "✅ <strong>" +
+      allNotifications.length +
+      "</strong> notifications available";
+
+    displayNotifications(allNotifications);
+
+  } catch (error) {
+
+    console.error(error);
+
+    status.innerHTML =
+      "⚠️ Unable to load notifications";
+
+    container.innerHTML = `
+      <div class="error">
+        Notification data is temporarily unavailable.<br><br>
+        Please try again later.
+      </div>
+    `;
+  }
+}
+
+
+function displayNotifications(items) {
+
+  const container = document.getElementById("notifications");
+
+  if (!items || items.length === 0) {
+
+    container.innerHTML = `
+      <div class="empty">
+        📭 No notifications found.
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = items.map((item, index) => {
+
+    const title =
+      escapeHtml(item.title || "COE Notification");
+
+    const url =
+      escapeAttribute(item.url || "#");
+
+    const date =
+      escapeHtml(item.date || "Date not available");
+
+    const latest =
+      index === 0
+        ? '<span class="new">LATEST</span>'
+        : "";
+
+    return `
+      <div class="notification">
+
+        ${latest}
+
+        <h2>${title}</h2>
+
+        <div class="date">
+          📅 ${date}
+        </div>
+
+        <div class="source">
+          ${escapeHtml(item.url || "")}
+        </div>
+
+        <a
+          class="open-btn"
+          href="${url}"
+          target="_blank"
+          rel="noopener"
+        >
+          📄 Open Notification
+        </a>
+
+      </div>
+    `;
+
+  }).join("");
+}
+
+
+document.getElementById("search").addEventListener(
+  "input",
+  function () {
+
+    const query =
+      this.value.toLowerCase().trim();
+
+    if (!query) {
+      displayNotifications(allNotifications);
+      return;
+    }
+
+    const filtered =
+      allNotifications.filter(item =>
+        JSON.stringify(item)
+          .toLowerCase()
+          .includes(query)
+      );
+
+    displayNotifications(filtered);
+  }
+);
+
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHtml(value)
+    .replaceAll("`", "&#096;");
+}
+
+
+loadNotifications();
+
 </script>
 
 </body>
