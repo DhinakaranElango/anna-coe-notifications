@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
@@ -34,7 +35,7 @@
 :root {
 
     --blue: #0757b8;
-    --blue2: #0b7cff;
+    --blue2: #087cff;
 
     --bg: #f4f7fb;
     --card: #ffffff;
@@ -42,10 +43,10 @@
     --text: #142033;
     --muted: #667085;
 
-    --border: #e4e9f0;
+    --border: #e1e7ef;
 
     --shadow:
-        0 10px 30px rgba(15, 35, 70, .08);
+        0 10px 30px rgba(15,35,70,.08);
 }
 
 body.dark {
@@ -59,7 +60,11 @@ body.dark {
     --border: #26344a;
 
     --shadow:
-        0 10px 30px rgba(0, 0, 0, .25);
+        0 10px 30px rgba(0,0,0,.25);
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
@@ -75,13 +80,20 @@ body {
 
     color: var(--text);
 
-    transition: .25s;
+    transition:
+        background .25s,
+        color .25s;
 }
 
 button,
 input {
 
     font: inherit;
+}
+
+button {
+
+    cursor: pointer;
 }
 
 a {
@@ -106,9 +118,9 @@ a {
     color: white;
 
     padding:
-        28px
-        18px
-        70px;
+        22px
+        16px
+        68px;
 }
 
 .header-inner {
@@ -117,6 +129,9 @@ a {
 
     margin: auto;
 }
+
+
+/* TOP BAR */
 
 .topbar {
 
@@ -135,13 +150,17 @@ a {
 
     align-items: center;
 
-    gap: 12px;
+    gap: 11px;
+
+    min-width: 0;
 }
 
 .logo {
 
     width: 52px;
     height: 52px;
+
+    min-width: 52px;
 
     border-radius: 16px;
 
@@ -156,6 +175,11 @@ a {
     font-size: 28px;
 }
 
+.brand-text {
+
+    min-width: 0;
+}
+
 .brand h1 {
 
     margin: 0;
@@ -165,21 +189,30 @@ a {
 
 .brand p {
 
-    margin: 4px 0 0;
+    margin:
+        4px
+        0
+        0;
 
     opacity: .85;
 
-    font-size: 13px;
+    font-size: 12px;
 }
+
+
+/* ACTIONS */
 
 .actions {
 
     display: flex;
 
-    gap: 8px;
+    gap: 7px;
 }
 
 .action {
+
+    width: 48px;
+    height: 48px;
 
     border:
         1px solid
@@ -190,16 +223,41 @@ a {
 
     color: white;
 
-    border-radius: 12px;
+    border-radius: 14px;
 
-    padding: 10px 12px;
+    display: flex;
 
-    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 21px;
+
+    transition:
+        transform .2s,
+        background .2s;
 }
+
+.action:hover {
+
+    transform:
+        translateY(-2px);
+
+    background:
+        rgba(255,255,255,.22);
+}
+
+.action:active {
+
+    transform:
+        scale(.94);
+}
+
+
+/* HERO */
 
 .hero {
 
-    margin-top: 32px;
+    margin-top: 30px;
 }
 
 .hero h2 {
@@ -208,23 +266,28 @@ a {
 
     font-size:
         clamp(
-            28px,
+            29px,
             7vw,
             48px
         );
 
-    line-height: 1.1;
+    line-height: 1.08;
 }
 
 .hero p {
 
-    margin: 12px 0 0;
+    margin:
+        12px
+        0
+        0;
 
-    max-width: 650px;
+    max-width: 700px;
 
-    opacity: .88;
+    opacity: .9;
 
     line-height: 1.5;
+
+    font-size: 15px;
 }
 
 
@@ -244,7 +307,7 @@ a {
     padding:
         0
         16px
-        50px;
+        45px;
 
     position: relative;
 }
@@ -259,7 +322,7 @@ a {
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(3,1fr);
 
     gap: 12px;
 }
@@ -272,7 +335,8 @@ a {
         1px solid
         var(--border);
 
-    box-shadow: var(--shadow);
+    box-shadow:
+        var(--shadow);
 
     border-radius: 18px;
 
@@ -288,7 +352,7 @@ a {
 
     display: block;
 
-    margin-top: 8px;
+    margin-top: 7px;
 
     font-size: 25px;
 
@@ -297,181 +361,114 @@ a {
 
 .stat-label {
 
+    margin-top: 4px;
+
     color: var(--muted);
 
     font-size: 12px;
-
-    margin-top: 4px;
 }
 
 
 /* =========================
-   TIMETABLE CARD
+   QUICK LINKS
 ========================= */
 
-.timetable-card {
+.quick-links {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap: 12px;
 
     margin-top: 16px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0757b8,
-            #087cff
-        );
-
-    color: white;
-
-    border-radius: 22px;
-
-    padding: 22px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 18px;
-
-    box-shadow: var(--shadow);
-
-    overflow: hidden;
-
-    position: relative;
 }
 
-.timetable-card::after {
+.quick-link {
 
-    content: "📅";
-
-    position: absolute;
-
-    right: 18px;
-
-    bottom: -28px;
-
-    font-size: 110px;
-
-    opacity: .10;
-}
-
-.timetable-icon {
-
-    width: 66px;
-    height: 66px;
-
-    min-width: 66px;
-
-    border-radius: 18px;
-
-    background:
-        rgba(255,255,255,.16);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 32px;
-
-    position: relative;
-
-    z-index: 1;
-}
-
-.timetable-content {
-
-    position: relative;
-
-    z-index: 2;
-}
-
-.timetable-badge {
-
-    display: inline-block;
-
-    background:
-        rgba(255,255,255,.18);
+    background: var(--card);
 
     border:
         1px solid
-        rgba(255,255,255,.20);
+        var(--border);
 
-    padding:
-        5px
-        10px;
+    box-shadow:
+        var(--shadow);
 
-    border-radius: 999px;
+    border-radius: 18px;
 
-    font-size: 10px;
-
-    font-weight: 700;
-
-    letter-spacing: .6px;
-}
-
-.timetable-card h3 {
-
-    margin:
-        9px
-        0
-        6px;
-
-    font-size: 20px;
-}
-
-.timetable-card p {
-
-    margin: 0;
-
-    max-width: 650px;
-
-    opacity: .9;
-
-    font-size: 13px;
-
-    line-height: 1.5;
-}
-
-.timetable-actions {
+    padding: 16px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 13px;
 
-    flex-wrap: wrap;
+    color: var(--text);
 
-    margin-top: 15px;
+    transition:
+        transform .2s,
+        border-color .2s;
 }
 
-.timetable-button {
+.quick-link:hover {
 
-    display: inline-block;
+    transform:
+        translateY(-2px);
 
-    background: white;
-
-    color: #0757b8;
-
-    padding:
-        11px
-        16px;
-
-    border-radius: 11px;
-
-    font-weight: 700;
-
-    font-size: 13px;
+    border-color:
+        var(--blue2);
 }
 
-.timetable-link {
+.quick-icon {
 
-    color: white;
+    width: 48px;
+    height: 48px;
 
-    font-size: 12px;
+    min-width: 48px;
 
-    opacity: .9;
+    border-radius: 14px;
+
+    background:
+        #eaf3ff;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 24px;
+}
+
+body.dark .quick-icon {
+
+    background:
+        #173458;
+}
+
+.quick-text {
+
+    min-width: 0;
+}
+
+.quick-text strong {
+
+    display: block;
+
+    font-size: 14px;
+}
+
+.quick-text span {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-size: 11px;
 }
 
 
@@ -487,7 +484,8 @@ a {
         1px solid
         var(--border);
 
-    box-shadow: var(--shadow);
+    box-shadow:
+        var(--shadow);
 
     border-radius: 22px;
 
@@ -556,9 +554,12 @@ a {
         14px
         16px
         14px
-        44px;
+        45px;
 
     outline: none;
+
+    transition:
+        border-color .2s;
 }
 
 .search:focus {
@@ -574,6 +575,8 @@ a {
     left: 16px;
 
     top: 13px;
+
+    font-size: 19px;
 }
 
 
@@ -619,8 +622,6 @@ a {
     padding:
         9px
         14px;
-
-    cursor: pointer;
 }
 
 .filter.active {
@@ -652,7 +653,7 @@ a {
 
 
 /* =========================
-   NOTIFICATIONS
+   NOTIFICATION CARDS
 ========================= */
 
 .notifications {
@@ -692,11 +693,11 @@ a {
 
     display: flex;
 
-    justify-content:
-        space-between;
-
     align-items:
         flex-start;
+
+    justify-content:
+        space-between;
 
     gap: 10px;
 }
@@ -772,7 +773,7 @@ body.dark .category {
         15px;
 
     word-break:
-        break-all;
+        break-word;
 }
 
 .card-buttons {
@@ -798,9 +799,6 @@ body.dark .category {
     padding:
         10px
         14px;
-
-    cursor:
-        pointer;
 
     font-weight:
         600;
@@ -849,10 +847,10 @@ body.dark .category {
 .spinner {
 
     width:
-        28px;
+        30px;
 
     height:
-        28px;
+        30px;
 
     border:
         3px solid
@@ -875,8 +873,10 @@ body.dark .category {
 @keyframes spin {
 
     to {
+
         transform:
             rotate(360deg);
+
     }
 }
 
@@ -917,9 +917,27 @@ body.dark .category {
     .header {
 
         padding:
-            22px
-            15px
+            20px
+            14px
             65px;
+    }
+
+    .logo {
+
+        width:
+            45px;
+
+        min-width:
+            45px;
+
+        height:
+            45px;
+
+        border-radius:
+            14px;
+
+        font-size:
+            24px;
     }
 
     .brand h1 {
@@ -931,32 +949,40 @@ body.dark .category {
     .brand p {
 
         font-size:
-            11px;
+            10px;
     }
 
-    .logo {
+    .actions {
 
-        width:
-            45px;
-
-        height:
-            45px;
-
-        font-size:
-            24px;
+        gap:
+            5px;
     }
 
     .action {
 
-        padding:
-            9px
-            10px;
+        width:
+            43px;
+
+        height:
+            43px;
+
+        border-radius:
+            12px;
+
+        font-size:
+            19px;
     }
 
-    .action-text {
+    .hero {
 
-        display:
-            none;
+        margin-top:
+            27px;
+    }
+
+    .hero p {
+
+        font-size:
+            13px;
     }
 
     .stats {
@@ -986,52 +1012,55 @@ body.dark .category {
             10px;
     }
 
-    .timetable-card {
+    .quick-links {
 
-        padding:
-            17px;
+        grid-template-columns:
+            1fr 1fr;
 
         gap:
-            13px;
+            8px;
     }
 
-    .timetable-icon {
+    .quick-link {
 
-        width:
-            52px;
-
-        min-width:
-            52px;
-
-        height:
-            52px;
-
-        font-size:
-            25px;
+        padding:
+            12px;
 
         border-radius:
             15px;
+
+        gap:
+            9px;
     }
 
-    .timetable-card h3 {
+    .quick-icon {
+
+        width:
+            40px;
+
+        min-width:
+            40px;
+
+        height:
+            40px;
+
+        border-radius:
+            11px;
 
         font-size:
-            17px;
+            20px;
     }
 
-    .timetable-card p {
+    .quick-text strong {
 
         font-size:
             12px;
     }
 
-    .timetable-button {
+    .quick-text span {
 
-        width:
-            100%;
-
-        text-align:
-            center;
+        font-size:
+            9px;
     }
 
     .panel {
@@ -1041,6 +1070,18 @@ body.dark .category {
 
         border-radius:
             18px;
+    }
+
+    .panel-title h3 {
+
+        font-size:
+            19px;
+    }
+
+    .panel-title p {
+
+        font-size:
+            11px;
     }
 
     .notification {
@@ -1054,6 +1095,17 @@ body.dark .category {
         font-size:
             16px;
     }
+
+    .btn {
+
+        padding:
+            9px
+            12px;
+
+        font-size:
+            12px;
+    }
+
 }
 
 </style>
@@ -1070,76 +1122,93 @@ body.dark .category {
 
 <header class="header">
 
-    <div class="header-inner">
+<div class="header-inner">
 
-        <div class="topbar">
 
-            <div class="brand">
+    <div class="topbar">
 
-                <div class="logo">
-                    🎓
-                </div>
 
-                <div>
+        <div class="brand">
 
-                    <h1>
-                        Anna University COE
-                    </h1>
-
-                    <p>
-                        Controller of Examinations
-                    </p>
-
-                </div>
-
+            <div class="logo">
+                🎓
             </div>
 
+            <div class="brand-text">
 
-            <div class="actions">
+                <h1>
+                    Anna University COE
+                </h1>
 
-                <button
-                    class="action"
-                    onclick="openNtfy()"
-                    title="Notifications"
-                >
-                    🔔
-                    <span class="action-text">
-                        Alerts
-                    </span>
-                </button>
-
-
-                <button
-                    class="action"
-                    onclick="toggleDark()"
-                    title="Dark mode"
-                >
-                    🌙
-                    <span class="action-text">
-                        Dark
-                    </span>
-                </button>
+                <p>
+                    Controller of Examinations
+                </p>
 
             </div>
 
         </div>
 
 
-        <div class="hero">
+        <div class="actions">
 
-            <h2>
-                COE Notification Portal
-            </h2>
 
-            <p>
-                Latest Anna University examination
-                notifications, circulars, results,
-                timetables and important updates.
-            </p>
+            <!-- NTFY -->
+
+            <button
+                class="action"
+                onclick="openNtfy()"
+                title="COE Alerts"
+                aria-label="COE Alerts"
+            >
+                🔔
+            </button>
+
+
+            <!-- TIMETABLE -->
+
+            <button
+                class="action"
+                onclick="openTimetable()"
+                title="Official Timetable"
+                aria-label="Official Timetable"
+            >
+                📅
+            </button>
+
+
+            <!-- DARK MODE -->
+
+            <button
+                class="action"
+                onclick="toggleDark()"
+                title="Dark Mode"
+                aria-label="Dark Mode"
+            >
+                🌙
+            </button>
+
 
         </div>
 
     </div>
+
+
+    <div class="hero">
+
+        <h2>
+            COE Notification Portal
+        </h2>
+
+        <p>
+            Latest Anna University examination
+            notifications, circulars, results,
+            timetables and important updates.
+        </p>
+
+    </div>
+
+
+</div>
 
 </header>
 
@@ -1155,6 +1224,7 @@ body.dark .category {
     <!-- STATS -->
 
     <section class="stats">
+
 
         <div class="stat">
 
@@ -1212,77 +1282,83 @@ body.dark .category {
 
         </div>
 
+
     </section>
 
 
 
     <!-- =========================
-         OFFICIAL TIMETABLE
+         QUICK LINKS
     ========================== -->
 
-    <section class="timetable-card">
-
-        <div class="timetable-icon">
-            📅
-        </div>
+    <section class="quick-links">
 
 
-        <div class="timetable-content">
+        <a
+            class="quick-link"
+            href="https://aucoe.annauniv.edu/timetable.php"
+            target="_blank"
+            rel="noopener"
+        >
 
-            <div class="timetable-badge">
-                OFFICIAL COE
+            <div class="quick-icon">
+                📅
             </div>
 
+            <div class="quick-text">
 
-            <h3>
-                Anna University Examination Timetable
-            </h3>
+                <strong>
+                    Examination Timetable
+                </strong>
 
-
-            <p>
-                View the latest official examination
-                timetable published by the Anna University
-                Controller of Examinations.
-            </p>
-
-
-            <div class="timetable-actions">
-
-                <a
-                    class="timetable-button"
-                    href="https://aucoe.annauniv.edu/timetable.php"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    📅 View Timetable
-                </a>
-
-
-                <a
-                    class="timetable-link"
-                    href="https://aucoe.annauniv.edu/timetable.php"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    Official COE Page ↗
-                </a>
+                <span>
+                    Official Anna University COE
+                </span>
 
             </div>
 
-        </div>
+        </a>
+
+
+        <a
+            class="quick-link"
+            href="https://coe.annauniv.edu/home/index.php"
+            target="_blank"
+            rel="noopener"
+        >
+
+            <div class="quick-icon">
+                🎓
+            </div>
+
+            <div class="quick-text">
+
+                <strong>
+                    Official COE Website
+                </strong>
+
+                <span>
+                    Anna University
+                </span>
+
+            </div>
+
+        </a>
+
 
     </section>
 
 
 
     <!-- =========================
-         NOTIFICATION PANEL
+         NOTIFICATIONS
     ========================== -->
 
     <section class="panel">
 
 
         <div class="panel-head">
+
 
             <div class="panel-title">
 
@@ -1304,6 +1380,7 @@ body.dark .category {
             >
                 🔄 Refresh
             </button>
+
 
         </div>
 
@@ -1332,6 +1409,7 @@ body.dark .category {
         <!-- FILTERS -->
 
         <div class="filters">
+
 
             <button
                 class="filter active"
@@ -1388,6 +1466,7 @@ body.dark .category {
                 📅 Today
             </button>
 
+
         </div>
 
 
@@ -1403,7 +1482,7 @@ body.dark .category {
 
 
 
-        <!-- NOTIFICATIONS -->
+        <!-- NOTIFICATION LIST -->
 
         <div
             id="notifications"
@@ -1420,7 +1499,9 @@ body.dark .category {
 
         </div>
 
+
     </section>
+
 
 </main>
 
@@ -1433,13 +1514,12 @@ body.dark .category {
 <footer class="footer">
 
     <p>
-        Anna University COE Notification Portal
+        🎓 Anna University COE Notification Portal
     </p>
 
     <p>
 
-        Official Source:
-
+        Official COE:
         <a
             href="https://coe.annauniv.edu/home/index.php"
             target="_blank"
@@ -1453,7 +1533,6 @@ body.dark .category {
     <p>
 
         Timetable:
-
         <a
             href="https://aucoe.annauniv.edu/timetable.php"
             target="_blank"
@@ -1470,9 +1549,8 @@ body.dark .category {
 
 <script>
 
-
 /* =========================
-   GLOBAL DATA
+   GLOBAL
 ========================= */
 
 let allNotifications = [];
@@ -1491,6 +1569,8 @@ function toggleDark() {
     localStorage.setItem(
         "coe-dark",
         document.body.classList.contains("dark")
+            ? "true"
+            : "false"
     );
 }
 
@@ -1512,50 +1592,22 @@ function openNtfy() {
 
     window.open(
         "https://ntfy.sh/anna-coe-dhina-7x9p4k2",
-        "_blank"
+        "_blank",
+        "noopener"
     );
 
 }
 
 
 /* =========================
-   GET TITLE
+   TIMETABLE
 ========================= */
 
-function getTitle(item) {
+function openTimetable() {
 
-    let title =
-        item.title ||
-        "COE Notification";
-
-
-    if (
-
-        title.toLowerCase() ===
-        "click here"
-
-        &&
-
-        item.url
-
-    ) {
-
-        let filename =
-            item.url
-                .split("/")
-                .pop()
-                .split("?")[0]
-                .replace(
-                    /\.(pdf|docx?|xlsx?)$/i,
-                    ""
-                )
-                .replace(
-                    /[_-]+/g,
-                    " "
-                )
-                .trim();
-
-
-        if (filename) {
-
-         
+    window.open(
+        "https://aucoe.annauniv.edu/timetable.php",
+        "_blank",
+        "noopener"
+    );
+    
