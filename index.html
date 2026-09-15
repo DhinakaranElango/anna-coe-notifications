@@ -232,8 +232,27 @@ function displayNotifications(items) {
 
   container.innerHTML = items.map((item, index) => {
 
-    const title =
-      escapeHtml(item.title || "COE Notification");
+    let displayTitle = item.title || "COE Notification";
+
+if (
+  displayTitle.toLowerCase() === "click here" &&
+  item.url
+) {
+  const filename = item.url
+    .split("/")
+    .pop()
+    .split("?")[0]
+    .replace(/\.(pdf|docx?|xlsx?)$/i, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+
+  if (filename) {
+    displayTitle = filename
+      .replace(/\b\w/g, letter => letter.toUpperCase());
+  }
+}
+
+const title = escapeHtml(displayTitle);
 
     const url =
       escapeAttribute(item.url || "#");
