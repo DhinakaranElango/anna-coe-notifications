@@ -316,25 +316,54 @@ document.getElementById("search").addEventListener(
   "input",
   function () {
 
-    const query =
-      this.value.toLowerCase().trim();
+    const query = this.value
+      .toLowerCase()
+      .trim()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
 
     if (!query) {
       displayNotifications(allNotifications);
       return;
     }
 
-    const filtered =
-      allNotifications.filter(item =>
-        JSON.stringify(item)
-          .toLowerCase()
-          .includes(query)
-      );
+    const filtered = allNotifications.filter(item => {
+
+      let title = item.title || "";
+
+      if (
+        title.toLowerCase() === "click here" &&
+        item.url
+      ) {
+        const filename = item.url
+          .split("/")
+          .pop()
+          .split("?")[0]
+          .replace(/\.(pdf|docx?|xlsx?)$/i, "")
+          .replace(/[_-]+/g, " ")
+          .trim();
+
+        if (filename) {
+          title = filename;
+        }
+      }
+
+      const searchableText = [
+        title,
+        item.date || "",
+        item.url || ""
+      ]
+        .join(" ")
+        .toLowerCase()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ");
+
+      return searchableText.includes(query);
+    });
 
     displayNotifications(filtered);
   }
 );
-
 
 function escapeHtml(value) {
 
