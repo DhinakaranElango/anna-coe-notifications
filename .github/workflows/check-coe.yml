@@ -1,12 +1,15 @@
 name: Check Anna University COE
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: "*/30 * * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   check-coe:
@@ -23,23 +26,64 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
       - name: Check COE website
         run: |
           python checker.py
 
-      - name: Commit notification updates
+      - name: Send ntfy notifications for new COE notifications
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          python - <<'PY'
+          import json
+          import subprocess
+
+          old_data = subprocess.check_output(
+              ["git", "show", "HEAD:data/notifications.json"],
+              text=True
+          )
+
+          old_items = json.loads(old_data)
+          new_items = json.load(open("data/notifications.json"))
+
+          old_urls = {
+              item.get("url")
+              for item in old_items
+              if item.get("url")
+          }
+
+          new_items_found = [
+              item for item in new_items
+              if item.get("url") and item.get("url") not in old_urls
+          ]
+
+          print(f"New notifications found: {len(new_items_found)}")
+
+          for item in new_items_found:
+              title = item.get("title") or "New COE Notification"
+              url = item.get("url")
+
+              message = f"🎓 {title}"
+
+              subprocess.run([
+                  "curl",
+                  "-sS",
+                  "-X", "POST",
+                  "-H", "Title: Anna University COE",
+                  "-H", "Priority: 4",
+                  "-H", "Tags: graduation_cap",
+                  "-H", f"Click: {url}",
+                  f"https://ntfy.sh/{__import__('os').environ['NTFY_TOPIC']}",
+                  "-d", message
+              ], check=True)
+          PY
+
+      - name: Commit updated notifications
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add data/notifications.json
-
-          if git diff --cached --quiet; then
-            echo "No notification changes."
-          else
-            git commit -m "Update COE notifications"
-            git push
-          fi
+          git diff --cached --quiet || git commit -m "Update COE notifications"
+          git push
