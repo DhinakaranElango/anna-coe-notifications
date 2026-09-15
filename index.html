@@ -7,7 +7,6 @@
 <title>Anna University COE Notification Portal</title>
 
 <meta name="theme-color" content="#0878f9">
-<meta name="description" content="Anna University Controller of Examinations notifications, results, timetables and updates.">
 
 <style>
 *{
@@ -23,17 +22,19 @@
     --card:#ffffff;
     --text:#172033;
     --muted:#718096;
-    --border:#e4eaf2;
-    --shadow:0 8px 25px rgba(30,70,120,.10);
+    --border:#e2e8f0;
+    --input:#f4f7fb;
+    --shadow:0 8px 28px rgba(25,65,110,.10);
 }
 
 body.dark{
-    --bg:#0b1018;
-    --card:#141b27;
-    --text:#f3f6fb;
-    --muted:#9da8b8;
-    --border:#263244;
-    --shadow:0 8px 25px rgba(0,0,0,.30);
+    --bg:#0b111b;
+    --card:#151e2b;
+    --text:#f5f7fb;
+    --muted:#9ca8b8;
+    --border:#293548;
+    --input:#101823;
+    --shadow:0 8px 28px rgba(0,0,0,.35);
 }
 
 html{
@@ -44,15 +45,20 @@ body{
     font-family:Arial,Helvetica,sans-serif;
     background:var(--bg);
     color:var(--text);
-    transition:.25s;
+    transition:background .25s,color .25s;
 }
 
 /* ================= HEADER ================= */
 
 .header{
-    background:linear-gradient(135deg,#075dc9,#0878f9,#1688ff);
-    color:white;
-    padding:16px 14px 55px;
+    background:linear-gradient(
+        135deg,
+        #075dc9,
+        #0878f9,
+        #1789ff
+    );
+    color:#fff;
+    padding:18px 16px 62px;
     position:relative;
     overflow:hidden;
 }
@@ -60,47 +66,47 @@ body{
 .header:after{
     content:"";
     position:absolute;
-    width:280px;
-    height:280px;
+    width:330px;
+    height:330px;
     border-radius:50%;
     background:rgba(255,255,255,.07);
     right:-120px;
-    top:-120px;
+    top:-160px;
 }
 
 .topbar{
+    position:relative;
+    z-index:3;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    position:relative;
-    z-index:2;
 }
 
 .brand{
     display:flex;
     align-items:center;
-    gap:9px;
+    gap:10px;
 }
 
 .brand-logo{
-    width:38px;
-    height:38px;
-    border-radius:12px;
+    width:43px;
+    height:43px;
+    border-radius:13px;
     background:rgba(255,255,255,.16);
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:21px;
+    font-size:23px;
 }
 
 .brand-title{
-    font-size:15px;
-    font-weight:800;
+    font-size:16px;
+    font-weight:900;
 }
 
 .brand-sub{
-    font-size:9px;
-    opacity:.8;
+    font-size:10px;
+    opacity:.82;
     margin-top:2px;
 }
 
@@ -110,49 +116,49 @@ body{
 }
 
 .action{
-    width:38px;
-    height:38px;
-    border:1px solid rgba(255,255,255,.18);
-    border-radius:11px;
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.22);
     background:rgba(255,255,255,.13);
-    color:white;
+    color:#fff;
     display:flex;
     align-items:center;
     justify-content:center;
     text-decoration:none;
-    font-size:18px;
+    font-size:20px;
     cursor:pointer;
-    transition:.2s;
+    -webkit-tap-highlight-color:transparent;
 }
 
-.action:hover{
-    background:rgba(255,255,255,.25);
-    transform:translateY(-1px);
+.action:active{
+    transform:scale(.94);
 }
 
 .hero{
     position:relative;
     z-index:2;
-    margin-top:19px;
+    margin-top:30px;
 }
 
 .hero h1{
-    font-size:34px;
-    line-height:1.1;
+    font-size:38px;
+    line-height:1.08;
     font-weight:900;
 }
 
 .hero p{
-    margin-top:7px;
-    font-size:12px;
-    opacity:.88;
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.45;
+    opacity:.9;
 }
 
-/* ================= CONTAINER ================= */
+/* ================= MAIN ================= */
 
 .container{
     width:min(1100px,calc(100% - 24px));
-    margin:-32px auto 0;
+    margin:-38px auto 0;
     position:relative;
     z-index:5;
 }
@@ -166,27 +172,27 @@ body{
 }
 
 .stat{
+    min-height:105px;
+    padding:15px;
     background:var(--card);
-    border-radius:15px;
-    padding:14px 12px;
+    border-radius:17px;
     box-shadow:var(--shadow);
-    min-height:82px;
 }
 
 .stat-icon{
-    font-size:16px;
+    font-size:20px;
 }
 
 .stat-number{
-    margin-top:3px;
-    font-size:18px;
+    margin-top:5px;
+    font-size:25px;
     font-weight:900;
 }
 
 .stat-label{
-    margin-top:2px;
+    margin-top:3px;
     color:var(--muted);
-    font-size:9px;
+    font-size:10px;
 }
 
 /* ================= QUICK LINKS ================= */
@@ -194,134 +200,137 @@ body{
 .quick-links{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin-top:12px;
+    gap:12px;
+    margin-top:13px;
 }
 
 .quick{
-    min-height:62px;
+    min-height:82px;
     background:var(--card);
+    color:var(--text);
     border:1px solid var(--border);
-    border-radius:15px;
-    padding:11px;
+    border-radius:17px;
+    padding:14px;
     display:flex;
     align-items:center;
-    gap:10px;
-    color:var(--text);
+    gap:12px;
     text-decoration:none;
-    box-shadow:0 3px 12px rgba(30,70,120,.05);
+    box-shadow:0 4px 18px rgba(30,70,120,.05);
     transition:.2s;
 }
 
-.quick:hover{
-    transform:translateY(-2px);
-    box-shadow:var(--shadow);
+.quick:active{
+    transform:scale(.98);
 }
 
 .quick-icon{
-    width:38px;
-    height:38px;
+    width:45px;
+    height:45px;
     flex:none;
-    border-radius:11px;
+    border-radius:13px;
     background:#edf5ff;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:19px;
+    font-size:22px;
 }
 
 body.dark .quick-icon{
-    background:#202c3e;
+    background:#202d40;
 }
 
 .quick-title{
-    font-size:12px;
-    font-weight:800;
+    font-size:14px;
+    font-weight:900;
 }
 
 .quick-sub{
-    margin-top:2px;
-    font-size:8px;
+    margin-top:4px;
+    font-size:10px;
     color:var(--muted);
 }
 
-/* ================= NOTIFICATION PANEL ================= */
+/* ================= PANEL ================= */
 
 .panel{
-    margin-top:12px;
+    margin-top:13px;
     background:var(--card);
     border:1px solid var(--border);
-    border-radius:18px;
+    border-radius:20px;
+    padding:14px;
     box-shadow:var(--shadow);
-    padding:13px;
 }
 
 .panel-head{
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
     gap:10px;
 }
 
 .panel-title{
-    font-size:15px;
+    font-size:18px;
     font-weight:900;
 }
 
 .panel-sub{
-    margin-top:3px;
+    margin-top:4px;
+    font-size:10px;
     color:var(--muted);
-    font-size:9px;
 }
 
 .refresh{
     border:1px solid var(--border);
     background:var(--card);
     color:var(--text);
-    border-radius:9px;
-    padding:8px 10px;
-    cursor:pointer;
+    padding:9px 12px;
+    border-radius:11px;
     font-size:10px;
-    font-weight:700;
+    font-weight:800;
+    cursor:pointer;
 }
 
 .refresh:active{
-    transform:scale(.97);
+    transform:scale(.96);
 }
 
 /* ================= SEARCH ================= */
 
-.search-box{
-    margin-top:12px;
+.search{
     position:relative;
+    margin-top:13px;
 }
 
-.search-box input{
+.search-icon{
+    position:absolute;
+    left:13px;
+    top:11px;
+    font-size:16px;
+}
+
+.search input{
     width:100%;
-    height:38px;
+    height:43px;
     border:1px solid var(--border);
-    border-radius:11px;
-    background:var(--bg);
+    border-radius:12px;
+    background:var(--input);
     color:var(--text);
     outline:none;
-    padding:0 12px 0 35px;
-    font-size:11px;
+    padding:0 13px 0 42px;
+    font-size:12px;
 }
 
-.search-box span{
-    position:absolute;
-    left:12px;
-    top:11px;
-    font-size:13px;
+.search input::placeholder{
+    color:var(--muted);
 }
 
 /* ================= FILTERS ================= */
 
 .filters{
     display:flex;
-    gap:7px;
+    gap:8px;
     overflow-x:auto;
-    padding:9px 0 4px;
+    padding:10px 0 4px;
     scrollbar-width:none;
 }
 
@@ -335,122 +344,126 @@ body.dark .quick-icon{
     background:var(--card);
     color:var(--text);
     border-radius:20px;
-    padding:7px 11px;
-    font-size:9px;
+    padding:8px 12px;
+    font-size:10px;
     cursor:pointer;
     white-space:nowrap;
 }
 
 .filter.active{
     background:var(--blue);
-    color:white;
+    color:#fff;
     border-color:var(--blue);
 }
 
 /* ================= STATUS ================= */
 
 .status{
-    margin:6px 1px 10px;
-    font-size:9px;
+    margin:8px 2px 10px;
     color:var(--muted);
+    font-size:10px;
 }
 
 /* ================= NOTIFICATIONS ================= */
 
 .notifications{
     display:grid;
-    gap:9px;
+    gap:10px;
 }
 
 .notification{
     border:1px solid var(--border);
-    border-radius:14px;
-    padding:12px;
+    border-radius:15px;
+    padding:13px;
     background:var(--card);
 }
 
-.notification-top{
+.notification-row{
     display:flex;
-    gap:9px;
+    gap:10px;
 }
 
 .notification-icon{
-    width:35px;
-    height:35px;
-    border-radius:10px;
+    width:39px;
+    height:39px;
+    flex:none;
+    border-radius:11px;
     background:#edf5ff;
     display:flex;
     align-items:center;
     justify-content:center;
-    flex:none;
-    font-size:17px;
+    font-size:18px;
 }
 
 body.dark .notification-icon{
-    background:#202c3e;
+    background:#202d40;
 }
 
 .notification-title{
-    font-size:12px;
-    font-weight:800;
-    line-height:1.35;
+    font-size:13px;
+    font-weight:900;
+    line-height:1.4;
 }
 
 .notification-date{
-    margin-top:4px;
-    font-size:9px;
+    margin-top:5px;
     color:var(--muted);
+    font-size:9px;
 }
 
-.notification-actions{
+.notification-buttons{
     display:flex;
     gap:7px;
-    margin-top:10px;
+    margin-top:11px;
 }
 
-.open-btn,
-.share-btn{
+.open{
+    background:var(--blue);
+    color:#fff;
     text-decoration:none;
     border-radius:9px;
-    padding:8px 10px;
+    padding:8px 11px;
+    font-size:9px;
+    font-weight:800;
+}
+
+.share{
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:8px 11px;
     font-size:9px;
     font-weight:800;
     cursor:pointer;
-    border:1px solid var(--border);
 }
 
-.open-btn{
-    background:var(--blue);
-    color:white;
-    border-color:var(--blue);
-}
-
-.share-btn{
-    background:var(--card);
-    color:var(--text);
-}
-
-/* ================= EMPTY / ERROR ================= */
+/* ================= MESSAGE ================= */
 
 .message{
     text-align:center;
-    padding:35px 15px;
+    padding:38px 15px;
     color:var(--muted);
     font-size:11px;
 }
 
 .message-icon{
-    font-size:30px;
-    margin-bottom:8px;
+    font-size:34px;
+    margin-bottom:9px;
+}
+
+.message strong{
+    color:var(--text);
 }
 
 .retry{
-    margin-top:12px;
-    padding:8px 13px;
+    margin-top:13px;
     border:0;
-    border-radius:9px;
     background:var(--blue);
-    color:white;
+    color:#fff;
+    border-radius:10px;
+    padding:9px 14px;
+    font-size:10px;
     font-weight:800;
     cursor:pointer;
 }
@@ -458,13 +471,13 @@ body.dark .notification-icon{
 /* ================= SPINNER ================= */
 
 .spinner{
-    width:24px;
-    height:24px;
-    border:3px solid var(--border);
+    width:28px;
+    height:28px;
+    border:4px solid var(--border);
     border-top-color:var(--blue);
     border-radius:50%;
-    animation:spin .8s linear infinite;
-    margin:0 auto 10px;
+    margin:0 auto 12px;
+    animation:spin .75s linear infinite;
 }
 
 @keyframes spin{
@@ -477,10 +490,10 @@ body.dark .notification-icon{
 
 footer{
     text-align:center;
-    padding:28px 10px 40px;
+    padding:30px 12px 45px;
     color:var(--muted);
     font-size:9px;
-    line-height:1.8;
+    line-height:2;
 }
 
 footer a{
@@ -488,41 +501,37 @@ footer a{
     text-decoration:none;
 }
 
-/* ================= DESKTOP ================= */
+/* ================= MOBILE ================= */
 
-@media(min-width:700px){
+@media(max-width:650px){
 
     .header{
-        padding:20px 24px 70px;
+        padding:17px 14px 60px;
     }
 
-    .container{
-        width:min(1050px,calc(100% - 40px));
+    .hero{
+        margin-top:28px;
     }
 
     .hero h1{
-        font-size:42px;
+        font-size:34px;
     }
 
     .hero p{
-        font-size:13px;
+        font-size:12px;
     }
-
-    .notification{
-        padding:15px;
-    }
-}
-
-/* ================= MOBILE ================= */
-
-@media(max-width:600px){
 
     .stats{
-        gap:7px;
+        gap:8px;
     }
 
     .stat{
-        padding:11px 9px;
+        padding:12px 10px;
+        min-height:95px;
+    }
+
+    .stat-number{
+        font-size:22px;
     }
 
     .quick-links{
@@ -532,26 +541,58 @@ footer a{
     .quick:last-child{
         grid-column:1 / -1;
     }
+}
+
+@media(max-width:420px){
+
+    .brand-title{
+        font-size:14px;
+    }
+
+    .brand-sub{
+        font-size:9px;
+    }
+
+    .action{
+        width:39px;
+        height:39px;
+        font-size:18px;
+    }
 
     .hero h1{
-        font-size:30px;
+        font-size:31px;
+    }
+
+    .quick-title{
+        font-size:12px;
+    }
+
+    .quick-sub{
+        font-size:9px;
     }
 }
 </style>
 </head>
 
+
 <body>
 
-<!-- ================= HEADER ================= -->
+<!-- ==================================================
+     HEADER
+================================================== -->
 
 <header class="header">
 
     <div class="topbar">
 
         <div class="brand">
-            <div class="brand-logo">🎓</div>
+
+            <div class="brand-logo">
+                🎓
+            </div>
 
             <div>
+
                 <div class="brand-title">
                     Anna University COE
                 </div>
@@ -559,30 +600,37 @@ footer a{
                 <div class="brand-sub">
                     Controller of Examinations
                 </div>
+
             </div>
+
         </div>
+
 
         <div class="actions">
 
-            <!-- ALERTS -->
+            <!-- COE ALERTS -->
             <a
                 class="action"
                 href="https://ntfy.sh/anna-coe-dhina-7x9p4k2"
                 target="_blank"
                 rel="noopener"
                 title="COE Alerts"
-                aria-label="COE Alerts"
-            >🔔</a>
+            >
+                🔔
+            </a>
 
-            <!-- TIMETABLE -->
+
+            <!-- OFFICIAL TIMETABLE -->
             <a
                 class="action"
                 href="https://aucoe.annauniv.edu/timetable.php"
                 target="_blank"
                 rel="noopener"
                 title="Official Timetable"
-                aria-label="Official Timetable"
-            >📅</a>
+            >
+                📅
+            </a>
+
 
             <!-- DARK MODE -->
             <button
@@ -590,16 +638,20 @@ footer a{
                 id="darkButton"
                 type="button"
                 title="Dark Mode"
-                aria-label="Dark Mode"
-            >🌙</button>
+            >
+                🌙
+            </button>
 
         </div>
 
     </div>
 
+
     <div class="hero">
 
-        <h1>COE Notification Portal</h1>
+        <h1>
+            COE Notification Portal
+        </h1>
 
         <p>
             Latest Anna University examination notifications,
@@ -611,38 +663,85 @@ footer a{
 </header>
 
 
-<!-- ================= MAIN ================= -->
+<!-- ==================================================
+     MAIN
+================================================== -->
 
 <main class="container">
+
 
     <!-- STATS -->
 
     <section class="stats">
 
         <div class="stat">
-            <div class="stat-icon">📢</div>
-            <div class="stat-number" id="totalCount">0</div>
-            <div class="stat-label">Total Notifications</div>
+
+            <div class="stat-icon">
+                📢
+            </div>
+
+            <div
+                class="stat-number"
+                id="totalCount"
+            >
+                —
+            </div>
+
+            <div class="stat-label">
+                Total Notifications
+            </div>
+
         </div>
 
-        <div class="stat">
-            <div class="stat-icon">📅</div>
-            <div class="stat-number" id="todayCount">0</div>
-            <div class="stat-label">Today's Updates</div>
-        </div>
 
         <div class="stat">
-            <div class="stat-icon">🟢</div>
-            <div class="stat-number" id="liveStatus">LIVE</div>
-            <div class="stat-label">COE Monitor</div>
+
+            <div class="stat-icon">
+                📅
+            </div>
+
+            <div
+                class="stat-number"
+                id="todayCount"
+            >
+                —
+            </div>
+
+            <div class="stat-label">
+                Today's Updates
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                🟢
+            </div>
+
+            <div
+                class="stat-number"
+                id="liveStatus"
+            >
+                LIVE
+            </div>
+
+            <div class="stat-label">
+                COE Monitor
+            </div>
+
         </div>
 
     </section>
 
 
-    <!-- QUICK LINKS -->
+    <!-- ==================================================
+         QUICK LINKS
+    ================================================== -->
 
     <section class="quick-links">
+
 
         <!-- TIMETABLE -->
 
@@ -653,9 +752,12 @@ footer a{
             rel="noopener"
         >
 
-            <div class="quick-icon">📅</div>
+            <div class="quick-icon">
+                📅
+            </div>
 
             <div>
+
                 <div class="quick-title">
                     Examination Timetable
                 </div>
@@ -663,6 +765,7 @@ footer a{
                 <div class="quick-sub">
                     Official Anna University COE
                 </div>
+
             </div>
 
         </a>
@@ -677,9 +780,12 @@ footer a{
             rel="noopener"
         >
 
-            <div class="quick-icon">🎓</div>
+            <div class="quick-icon">
+                🎓
+            </div>
 
             <div>
+
                 <div class="quick-title">
                     Official Result Website
                 </div>
@@ -687,6 +793,7 @@ footer a{
                 <div class="quick-sub">
                     Anna University COE
                 </div>
+
             </div>
 
         </a>
@@ -701,9 +808,12 @@ footer a{
             rel="noopener"
         >
 
-            <div class="quick-icon">📡</div>
+            <div class="quick-icon">
+                📡
+            </div>
 
             <div>
+
                 <div class="quick-title">
                     Server Status Checker
                 </div>
@@ -711,6 +821,7 @@ footer a{
                 <div class="quick-sub">
                     Check Anna University servers
                 </div>
+
             </div>
 
         </a>
@@ -718,13 +829,16 @@ footer a{
     </section>
 
 
-    <!-- NOTIFICATIONS -->
+    <!-- ==================================================
+         NOTIFICATION PANEL
+    ================================================== -->
 
     <section class="panel">
 
         <div class="panel-head">
 
             <div>
+
                 <div class="panel-title">
                     Latest Notifications
                 </div>
@@ -732,7 +846,9 @@ footer a{
                 <div class="panel-sub">
                     Automatically loaded from the notification database
                 </div>
+
             </div>
+
 
             <button
                 class="refresh"
@@ -747,9 +863,11 @@ footer a{
 
         <!-- SEARCH -->
 
-        <div class="search-box">
+        <div class="search">
 
-            <span>🔍</span>
+            <span class="search-icon">
+                🔍
+            </span>
 
             <input
                 id="search"
@@ -769,46 +887,62 @@ footer a{
                 class="filter active"
                 data-filter="all"
                 type="button"
-            >All</button>
+            >
+                All
+            </button>
 
             <button
                 class="filter"
                 data-filter="exams"
                 type="button"
-            >📝 Exams</button>
+            >
+                📝 Exams
+            </button>
 
             <button
                 class="filter"
                 data-filter="results"
                 type="button"
-            >📊 Results</button>
+            >
+                📊 Results
+            </button>
 
             <button
                 class="filter"
                 data-filter="timetable"
                 type="button"
-            >📅 Timetable</button>
+            >
+                📅 Timetable
+            </button>
 
             <button
                 class="filter"
                 data-filter="revaluation"
                 type="button"
-            >🔄 Revaluation</button>
+            >
+                🔄 Revaluation
+            </button>
 
             <button
                 class="filter"
                 data-filter="circulars"
                 type="button"
-            >📢 Circulars</button>
+            >
+                📢 Circulars
+            </button>
 
             <button
                 class="filter"
                 data-filter="today"
                 type="button"
-            >📅 Today</button>
+            >
+                📅 Today
+            </button>
 
         </div>
 
+
+        <!-- STATUS -->
 
         <div
             class="status"
@@ -817,6 +951,8 @@ footer a{
             🔄 Checking latest notifications...
         </div>
 
+
+        <!-- NOTIFICATION LIST -->
 
         <div
             class="notifications"
@@ -838,7 +974,9 @@ footer a{
 </main>
 
 
-<!-- ================= FOOTER ================= -->
+<!-- ==================================================
+     FOOTER
+================================================== -->
 
 <footer>
 
@@ -846,13 +984,13 @@ footer a{
 
     <br>
 
-    Official COE:
+    Official Result Website:
     <a
         href="https://aucoe.annauniv.edu/index.php#"
         target="_blank"
         rel="noopener"
     >
-        Official Result Website
+        aucoe.annauniv.edu
     </a>
 
     <br>
@@ -883,20 +1021,20 @@ footer a{
 <script>
 
 /* =====================================================
-   ANNA UNIVERSITY COE PORTAL
-   Robust notification loader
-   ===================================================== */
+   COE PORTAL JAVASCRIPT
+===================================================== */
 
 "use strict";
 
 
-/* ================= VARIABLES ================= */
-
 let allNotifications = [];
+
 let activeFilter = "all";
 
 
-/* ================= DARK MODE ================= */
+/* =====================================================
+   DARK MODE
+===================================================== */
 
 function updateDarkButton(){
 
@@ -907,43 +1045,46 @@ function updateDarkButton(){
         return;
     }
 
-    if(document.body.classList.contains("dark")){
+    if(
+        document.body.classList.contains("dark")
+    ){
 
         button.textContent = "☀️";
-        button.title = "Light Mode";
-        button.setAttribute(
-            "aria-label",
-            "Light Mode"
-        );
+
+        button.title =
+            "Light Mode";
 
     }else{
 
         button.textContent = "🌙";
-        button.title = "Dark Mode";
-        button.setAttribute(
-            "aria-label",
-            "Dark Mode"
-        );
+
+        button.title =
+            "Dark Mode";
     }
 }
 
 
-function loadDarkMode(){
+function applySavedDarkMode(){
 
     try{
 
         const saved =
-            localStorage.getItem("coe-dark");
+            localStorage.getItem("anna-coe-dark");
 
         if(saved === "1"){
-            document.body.classList.add("dark");
+
+            document.body.classList.add(
+                "dark"
+            );
+
         }
 
     }catch(error){
 
         console.log(
-            "Dark mode storage unavailable"
+            "Storage unavailable"
         );
+
     }
 
     updateDarkButton();
@@ -952,33 +1093,70 @@ function loadDarkMode(){
 
 function toggleDarkMode(){
 
-    document.body.classList.toggle("dark");
+    const enabled =
+        document.body.classList.toggle(
+            "dark"
+        );
+
 
     try{
 
         localStorage.setItem(
-            "coe-dark",
-            document.body.classList.contains("dark")
-                ? "1"
-                : "0"
+            "anna-coe-dark",
+            enabled ? "1" : "0"
         );
 
     }catch(error){
 
         console.log(
-            "Dark mode storage unavailable"
+            "Could not save dark mode"
         );
+
     }
+
 
     updateDarkButton();
 }
 
 
-/* ================= HELPERS ================= */
+/*
+ * IMPORTANT:
+ * Attach dark mode immediately.
+ * It does NOT depend on notification loading.
+ */
 
-function safeText(value){
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-    if(value === null || value === undefined){
+        applySavedDarkMode();
+
+        const darkButton =
+            document.getElementById(
+                "darkButton"
+            );
+
+        if(darkButton){
+
+            darkButton.onclick =
+                toggleDarkMode;
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function text(value){
+
+    if(
+        value === null ||
+        value === undefined
+    ){
         return "";
     }
 
@@ -986,9 +1164,9 @@ function safeText(value){
 }
 
 
-function normalize(text){
+function normalize(value){
 
-    return safeText(text)
+    return text(value)
         .toLowerCase()
         .replace(/[_-]+/g," ")
         .replace(/\s+/g," ")
@@ -996,10 +1174,11 @@ function normalize(text){
 }
 
 
-function getTitle(item){
+function titleOf(item){
 
     let title =
-        safeText(item.title).trim();
+        text(item.title).trim();
+
 
     if(
         !title ||
@@ -1008,111 +1187,6 @@ function getTitle(item){
 
         if(item.url){
 
-            let filename =
-                safeText(item.url)
-                    .split("/")
-                    .pop()
-                    .split("?")[0]
-                    .replace(/\.(pdf|docx?|xlsx?)$/i,"")
-                    .replace(/[_-]+/g," ")
-                    .trim();
-
-            if(filename){
-                title = filename;
-            }
-        }
-    }
-
-    return title || "Anna University COE Notification";
-}
-
-
-function getDate(item){
-
-    return (
-        item.date ||
-        item.published ||
-        item.updated ||
-        ""
-    );
-}
-
-
-function getCategory(item){
-
-    const text = normalize(
-        [
-            item.title,
-            item.text,
-            item.description,
-            item.content,
-            item.notice,
-            item.notification,
-            item.url
-        ].join(" ")
-    );
-
-    if(
-        text.includes("revaluation") ||
-        text.includes("retotaling") ||
-        text.includes("retotalling")
-    ){
-        return "revaluation";
-    }
-
-    if(
-        text.includes("result") ||
-        text.includes("marksheet") ||
-        text.includes("mark sheet")
-    ){
-        return "results";
-    }
-
-    if(
-        text.includes("timetable") ||
-        text.includes("time table") ||
-        text.includes("exam schedule") ||
-        text.includes("schedule")
-    ){
-        return "timetable";
-    }
-
-    if(
-        text.includes("exam") ||
-        text.includes("examination") ||
-        text.includes("hall ticket") ||
-        text.includes("question paper")
-    ){
-        return "exams";
-    }
-
-    return "circulars";
-}
-
-
-function isToday(dateText){
-
-    if(!dateText){
-        return false;
-    }
-
-    const today =
-        new Date();
-
-    const normalizedDate =
-        normalize(dateText);
-
-    const day =
-        String(today.getDate()).padStart(2,"0");
-
-    const month =
-        String(today.getMonth()+1).padStart(2,"0");
-
-    const year =
-        String(today.getFullYear());
-
-    const formats = [
-
-        day + "-" + month + "-" + year,
-
-        day + "/
+            const filename =
+                text(item.url)
+ 
