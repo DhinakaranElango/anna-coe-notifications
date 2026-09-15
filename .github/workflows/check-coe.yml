@@ -68,12 +68,7 @@ jobs:
               title = item.get("title") or "New COE Notification"
               url = item.get("url")
 
-              message = f"""🎓 Anna University COE
-
-📢 {title}
-
-📄 Open PDF:
-{url}"""
+              message = f"🎓 Anna University COE\n\n📢 {title}\n\n📄 Open PDF:\n{url}"
 
               subprocess.run([
                   "curl",
