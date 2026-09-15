@@ -55,7 +55,7 @@ def fetch(url):
     for attempt in range(3):
         try:
             print(f"Trying {url} (attempt {attempt + 1}/3)")
-            response = session.get(url, timeout=30)
+            response = session.get(url, timeout=30, verify=False)
             response.raise_for_status()
 
             if len(response.text) < 500:
