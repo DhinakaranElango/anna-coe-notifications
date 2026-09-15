@@ -6,541 +6,447 @@
 
 <title>Anna University COE Notifications</title>
 
+<meta name="theme-color" content="#0757b8">
+<meta name="description" content="Anna University Controller of Examinations Notifications">
+
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+* {
+    box-sizing: border-box;
 }
 
-html{
-  scroll-behavior:smooth;
+:root {
+    --blue: #0757b8;
+    --blue2: #0b7cff;
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #142033;
+    --muted: #667085;
+    --border: #e4e9f0;
+    --shadow: 0 10px 30px rgba(15, 35, 70, .08);
 }
 
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#eef4fb;
-  color:#172033;
-  transition:.3s;
+body.dark {
+    --bg: #0b1220;
+    --card: #121c2d;
+    --text: #f4f7fb;
+    --muted: #aab5c5;
+    --border: #26344a;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .25);
 }
 
-body.dark{
-  background:#0b1020;
-  color:#f4f7ff;
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: .25s;
 }
 
-a{
-  text-decoration:none;
-  color:inherit;
+button,
+input {
+    font: inherit;
+}
+
+a {
+    text-decoration: none;
 }
 
 /* HEADER */
 
-.header{
-  background:linear-gradient(135deg,#087cf0,#1260d8);
-  color:white;
-  padding:22px 20px 28px;
-  position:relative;
+.header {
+    background: linear-gradient(135deg, #06499c, #087cff);
+    color: white;
+    padding: 28px 18px 70px;
 }
 
-.header-inner{
-  max-width:1100px;
-  margin:auto;
+.header-inner {
+    max-width: 1100px;
+    margin: auto;
 }
 
-.header-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.logo{
-  font-size:22px;
-  font-weight:800;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.logo-sub{
-  font-size:13px;
-  opacity:.85;
-  margin-top:4px;
+.logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
 }
 
-/* ONLY TWO TOP ICONS */
-
-.top-actions{
-  display:flex;
-  gap:9px;
+.brand h1 {
+    margin: 0;
+    font-size: 20px;
 }
 
-.icon-btn{
-  width:43px;
-  height:43px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.18);
-  color:white;
-  font-size:21px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:.2s;
+.brand p {
+    margin: 4px 0 0;
+    opacity: .85;
+    font-size: 13px;
 }
 
-.icon-btn:hover{
-  background:rgba(255,255,255,.3);
-  transform:scale(1.06);
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action {
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.14);
+    color: white;
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+.hero {
+    margin-top: 32px;
+}
+
+.hero h2 {
+    margin: 0;
+    font-size: clamp(28px, 7vw, 48px);
+    line-height: 1.1;
+}
+
+.hero p {
+    margin: 12px 0 0;
+    max-width: 650px;
+    opacity: .88;
 }
 
 /* MAIN */
 
-.container{
-  max-width:1100px;
-  margin:-2px auto 0;
-  padding:0 20px 40px;
+.container {
+    max-width: 1100px;
+    margin: -42px auto 0;
+    padding: 0 16px 50px;
+    position: relative;
 }
 
 /* STATS */
 
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:18px;
-  margin-top:-5px;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
 }
 
-.stat{
-  background:white;
-  border-radius:28px;
-  padding:24px;
-  min-height:145px;
-  box-shadow:0 8px 25px rgba(20,50,100,.08);
+.stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    border-radius: 18px;
+    padding: 18px;
 }
 
-body.dark .stat,
-body.dark .quick-card,
-body.dark .server-card,
-body.dark .notification-box{
-  background:#151c30;
-  color:#f4f7ff;
-  border-color:#27334f;
+.stat-icon {
+    font-size: 23px;
 }
 
-.stat-icon{
-  font-size:28px;
+.stat-value {
+    display: block;
+    margin-top: 8px;
+    font-size: 25px;
+    font-weight: 700;
 }
 
-.stat-number{
-  font-size:43px;
-  font-weight:800;
-  margin-top:8px;
+.stat-label {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
 }
 
-.stat-label{
-  color:#8a94a6;
-  margin-top:4px;
+/* PANEL */
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    border-radius: 22px;
+    padding: 20px;
+    margin-top: 16px;
 }
 
-/* QUICK LINKS */
-
-.quick-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
-  margin-top:26px;
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.quick-card{
-  background:white;
-  border:1px solid #dce5ef;
-  border-radius:28px;
-  padding:25px;
-  display:flex;
-  align-items:center;
-  gap:20px;
-  min-height:150px;
-  box-shadow:0 7px 24px rgba(20,50,100,.06);
-  transition:.2s;
+.panel-title h3 {
+    margin: 0;
+    font-size: 21px;
 }
 
-.quick-card:hover{
-  transform:translateY(-3px);
-  box-shadow:0 12px 30px rgba(20,50,100,.12);
-}
-
-.quick-icon{
-  width:88px;
-  height:88px;
-  border-radius:25px;
-  background:#edf6ff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-  flex-shrink:0;
-}
-
-.quick-title{
-  font-size:22px;
-  font-weight:800;
-}
-
-.quick-desc{
-  margin-top:7px;
-  color:#8a94a6;
-  line-height:1.35;
-}
-
-/* SERVER */
-
-.server-card{
-  margin-top:20px;
-  background:white;
-  border:1px solid #dce5ef;
-  border-radius:28px;
-  padding:27px;
-  display:flex;
-  align-items:center;
-  gap:20px;
-  box-shadow:0 7px 24px rgba(20,50,100,.06);
-}
-
-.server-icon{
-  width:88px;
-  height:88px;
-  border-radius:25px;
-  background:#edf6ff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-}
-
-.server-title{
-  font-size:21px;
-  font-weight:800;
-}
-
-.server-desc{
-  margin-top:6px;
-  color:#8a94a6;
-}
-
-/* NOTIFICATIONS */
-
-.notification-box{
-  margin-top:25px;
-  background:white;
-  border:1px solid #dce5ef;
-  border-radius:30px;
-  padding:27px;
-  box-shadow:0 7px 24px rgba(20,50,100,.06);
-}
-
-.notification-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-}
-
-.notification-title{
-  font-size:30px;
-  font-weight:800;
-}
-
-.notification-sub{
-  color:#8a94a6;
-  margin-top:5px;
-}
-
-.refresh{
-  border:1px solid #dce5ef;
-  background:white;
-  padding:13px 18px;
-  border-radius:17px;
-  font-weight:700;
-  cursor:pointer;
-  font-size:15px;
-}
-
-body.dark .refresh{
-  background:#1b243b;
-  color:white;
-  border-color:#33415e;
+.panel-title p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 /* SEARCH */
 
-.search{
-  width:100%;
-  margin-top:24px;
-  padding:20px 22px;
-  border:2px solid #e1e8f1;
-  border-radius:22px;
-  background:#f5f8fc;
-  font-size:17px;
-  outline:none;
-  color:#172033;
+.search-wrap {
+    margin-top: 18px;
+    position: relative;
 }
 
-body.dark .search{
-  background:#0f1628;
-  color:white;
-  border-color:#303d59;
+.search {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 14px 16px 14px 44px;
+    outline: none;
 }
 
-.search:focus{
-  border-color:#1684ef;
+.search:focus {
+    border-color: var(--blue2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 13px;
 }
 
 /* FILTERS */
 
-.filters{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding:18px 0 10px;
-  scrollbar-width:none;
+.filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 14px 0 4px;
+    scrollbar-width: none;
 }
 
-.filters::-webkit-scrollbar{
-  display:none;
+.filters::-webkit-scrollbar {
+    display: none;
 }
 
-.filter{
-  flex-shrink:0;
-  border:1px solid #dce5ef;
-  background:white;
-  border-radius:25px;
-  padding:11px 19px;
-  cursor:pointer;
-  font-size:15px;
+.filter {
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 9px 14px;
+    cursor: pointer;
 }
 
-body.dark .filter{
-  background:#151c30;
-  color:white;
-  border-color:#33415e;
-}
-
-.filter.active{
-  background:#087cf0;
-  color:white;
-  border-color:#087cf0;
+.filter.active {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue);
 }
 
 /* STATUS */
 
-.status{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:#7e8999;
-  font-size:14px;
-  margin:7px 0 18px;
+.status {
+    margin: 14px 0;
+    color: var(--muted);
+    font-size: 13px;
 }
 
-.status-dot{
-  width:13px;
-  height:13px;
-  border-radius:50%;
-  background:#72b532;
+/* NOTIFICATIONS */
+
+.notifications {
+    display: grid;
+    gap: 12px;
 }
 
-/* NOTIFICATION CARDS */
-
-.notifications{
-  display:flex;
-  flex-direction:column;
-  gap:15px;
+.notification {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    background: var(--card);
+    transition: transform .2s, box-shadow .2s;
 }
 
-.notification{
-  border:1px solid #dce5ef;
-  border-radius:22px;
-  padding:20px;
-  background:#fbfdff;
-  transition:.2s;
+.notification:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
-body.dark .notification{
-  background:#10182b;
-  border-color:#2b3854;
+.notification-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
 }
 
-.notification:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 20px rgba(20,50,100,.08);
+.category {
+    display: inline-block;
+    background: #eaf3ff;
+    color: #0757b8;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
 }
 
-.notification-date{
-  font-size:13px;
-  color:#087cf0;
-  font-weight:700;
+body.dark .category {
+    background: #173458;
+    color: #79b7ff;
 }
 
-.notification-name{
-  font-size:20px;
-  font-weight:800;
-  margin:7px 0 12px;
-  line-height:1.3;
+.date {
+    color: var(--muted);
+    font-size: 12px;
 }
 
-.notification-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:9px;
+.notification h4 {
+    margin: 13px 0 8px;
+    font-size: 18px;
+    line-height: 1.35;
 }
 
-.open-btn,
-.coe-btn{
-  display:inline-block;
-  padding:11px 15px;
-  border-radius:13px;
-  font-weight:700;
-  font-size:14px;
+.pdf-link {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 15px;
+    word-break: break-all;
 }
 
-.open-btn{
-  background:#087cf0;
-  color:white;
+.card-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.coe-btn{
-  background:#edf5ff;
-  color:#0870d8;
+.btn {
+    border: 0;
+    border-radius: 11px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 600;
 }
 
-body.dark .coe-btn{
-  background:#1c2943;
-  color:#70b7ff;
+.btn-primary {
+    background: var(--blue);
+    color: white;
 }
 
-/* EMPTY */
+.btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
 
-.empty{
-  text-align:center;
-  padding:35px 10px;
-  color:#8994a5;
+/* LOADING / EMPTY */
+
+.message {
+    text-align: center;
+    padding: 35px 15px;
+    color: var(--muted);
+}
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* FOOTER */
 
-footer{
-  text-align:center;
-  padding:35px 15px 45px;
-  color:#8792a4;
-  line-height:2;
+.footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 25px 10px;
 }
 
-footer a{
-  color:#1780d8;
+.footer a {
+    color: var(--blue2);
 }
 
 /* MOBILE */
 
-@media(max-width:700px){
+@media (max-width: 600px) {
 
-  .header{
-    padding:18px 15px 25px;
-  }
+    .header {
+        padding: 22px 15px 65px;
+    }
 
-  .container{
-    padding:0 15px 30px;
-  }
+    .brand h1 {
+        font-size: 17px;
+    }
 
-  .logo{
-    font-size:19px;
-  }
+    .brand p {
+        font-size: 11px;
+    }
 
-  .logo-sub{
-    font-size:11px;
-  }
+    .logo {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
 
-  .stats{
-    gap:10px;
-  }
+    .action {
+        padding: 9px 10px;
+    }
 
-  .stat{
-    padding:17px 12px;
-    min-height:125px;
-    border-radius:24px;
-  }
+    .action-text {
+        display: none;
+    }
 
-  .stat-icon{
-    font-size:23px;
-  }
+    .stats {
+        gap: 8px;
+    }
 
-  .stat-number{
-    font-size:34px;
-  }
+    .stat {
+        padding: 13px;
+        border-radius: 15px;
+    }
 
-  .stat-label{
-    font-size:12px;
-  }
+    .stat-value {
+        font-size: 20px;
+    }
 
-  .quick-grid{
-    gap:12px;
-  }
+    .stat-label {
+        font-size: 10px;
+    }
 
-  .quick-card{
-    padding:17px;
-    min-height:135px;
-    border-radius:24px;
-    gap:13px;
-  }
+    .panel {
+        padding: 15px;
+        border-radius: 18px;
+    }
 
-  .quick-icon{
-    width:67px;
-    height:67px;
-    border-radius:20px;
-    font-size:31px;
-  }
+    .notification {
+        padding: 15px;
+    }
 
-  .quick-title{
-    font-size:17px;
-  }
-
-  .quick-desc{
-    font-size:13px;
-  }
-
-  .server-card{
-    padding:20px;
-    border-radius:24px;
-  }
-
-  .server-icon{
-    width:65px;
-    height:65px;
-    font-size:31px;
-  }
-
-  .server-title{
-    font-size:17px;
-  }
-
-  .notification-box{
-    padding:20px 15px;
-    border-radius:26px;
-  }
-
-  .notification-title{
-    font-size:27px;
-  }
-
-  .notification-head{
-    align-items:flex-start;
-  }
-
-  .refresh{
-    padding:10px 12px;
-  }
-
-  .notification-name{
-    font-size:18px;
-  }
+    .notification h4 {
+        font-size: 16px;
+    }
 }
 </style>
 </head>
@@ -548,734 +454,594 @@ footer a{
 <body>
 
 <header class="header">
+    <div class="header-inner">
 
-  <div class="header-inner">
+        <div class="topbar">
 
-    <div class="header-top">
+            <div class="brand">
+                <div class="logo">🎓</div>
 
-      <div>
-        <div class="logo">🎓 Anna University COE</div>
-        <div class="logo-sub">
-          Controller of Examinations Notifications
+                <div>
+                    <h1>Anna University COE</h1>
+                    <p>Controller of Examinations</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="action" onclick="openNtfy()" title="Notifications">
+                    🔔 <span class="action-text">Alerts</span>
+                </button>
+
+                <button class="action" onclick="toggleDark()" title="Dark mode">
+                    🌙 <span class="action-text">Dark</span>
+                </button>
+            </div>
+
         </div>
-      </div>
 
-      <!-- ONLY TWO ICONS -->
-      <div class="top-actions">
-
-        <a
-          class="icon-btn"
-          href="https://ntfy.sh/anna-coe-dhina-7x9p4k2"
-          target="_blank"
-          title="Notifications"
-        >🔔</a>
-
-        <button
-          class="icon-btn"
-          id="darkButton"
-          onclick="toggleDarkMode()"
-          title="Dark Mode"
-        >🌙</button>
-
-      </div>
+        <div class="hero">
+            <h2>COE Notification Portal</h2>
+            <p>
+                Latest Anna University examination notifications,
+                circulars, results, timetables and important updates.
+            </p>
+        </div>
 
     </div>
-
-  </div>
-
 </header>
-
 
 <main class="container">
 
-  <!-- STATS -->
+    <section class="stats">
 
-  <section class="stats">
-
-    <div class="stat">
-      <div class="stat-icon">📢</div>
-      <div class="stat-number" id="totalCount">0</div>
-      <div class="stat-label">Total Notifications</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-icon">📅</div>
-      <div class="stat-number" id="todayCount">0</div>
-      <div class="stat-label">Today's Updates</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-icon">🟢</div>
-      <div class="stat-number">LIVE</div>
-      <div class="stat-label">COE Monitor</div>
-    </div>
-
-  </section>
-
-
-  <!-- QUICK LINKS -->
-
-  <section class="quick-grid">
-
-    <a
-      class="quick-card"
-      href="https://aucoe.annauniv.edu/timetable.php"
-      target="_blank"
-    >
-      <div class="quick-icon">📅</div>
-
-      <div>
-        <div class="quick-title">Examination Timetable</div>
-        <div class="quick-desc">
-          Official Anna University COE
-        </div>
-      </div>
-    </a>
-
-
-    <a
-      class="quick-card"
-      href="https://coe.annauniv.edu/home/index.php"
-      target="_blank"
-    >
-      <div class="quick-icon">🎓</div>
-
-      <div>
-        <div class="quick-title">Official Result Website</div>
-        <div class="quick-desc">
-          Anna University COE
-        </div>
-      </div>
-    </a>
-
-
-    <a
-      class="quick-card"
-      href="https://cac.annauniv.edu/"
-      target="_blank"
-    >
-      <div class="quick-icon">📚</div>
-
-      <div>
-        <div class="quick-title">Academic Courses</div>
-        <div class="quick-desc">
-          Schedule • Calendar • Regulations
-        </div>
-      </div>
-    </a>
-
-  </section>
-
-
-  <!-- SERVER -->
-
-  <a
-    class="server-card"
-    href="https://dhinakaranelango.github.io/result-server-checker/"
-    target="_blank"
-  >
-
-    <div class="server-icon">📡</div>
-
-    <div>
-      <div class="server-title">
-        Anna University Server Status Checker
-      </div>
-
-      <div class="server-desc">
-        Check Result Server Availability
-      </div>
-    </div>
-
-  </a>
-
-
-  <!-- NOTIFICATIONS -->
-
-  <section class="notification-box">
-
-    <div class="notification-head">
-
-      <div>
-        <div class="notification-title">
-          Latest Notifications
+        <div class="stat">
+            <div class="stat-icon">📢</div>
+            <span class="stat-value" id="totalCount">0</span>
+            <div class="stat-label">Total Notifications</div>
         </div>
 
-        <div class="notification-sub">
-          Automatically updated from COE
+        <div class="stat">
+            <div class="stat-icon">📅</div>
+            <span class="stat-value" id="todayCount">0</span>
+            <div class="stat-label">Today's Updates</div>
         </div>
-      </div>
 
-      <button
-        class="refresh"
-        onclick="loadNotifications()"
-      >
-        🔄 Refresh
-      </button>
+        <div class="stat">
+            <div class="stat-icon">🟢</div>
+            <span class="stat-value">LIVE</span>
+            <div class="stat-label">COE Monitor</div>
+        </div>
 
-    </div>
+    </section>
 
+    <section class="panel">
 
-    <input
-      class="search"
-      id="search"
-      type="search"
-      placeholder="🔎  Search notifications..."
-      autocomplete="off"
-    >
+        <div class="panel-head">
 
+            <div class="panel-title">
+                <h3>Latest Notifications</h3>
+                <p>Automatically loaded from the notification database</p>
+            </div>
 
-    <div class="filters">
+            <button class="btn btn-secondary" onclick="loadNotifications()">
+                🔄 Refresh
+            </button>
 
-      <button class="filter active" data-category="All">
-        All
-      </button>
+        </div>
 
-      <button class="filter" data-category="Exams">
-        📝 Exams
-      </button>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
 
-      <button class="filter" data-category="Results">
-        📊 Results
-      </button>
+            <input
+                id="search"
+                class="search"
+                type="search"
+                placeholder="Search notifications..."
+                autocomplete="off"
+            >
+        </div>
 
-      <button class="filter" data-category="Timetable">
-        📅 Timetable
-      </button>
+        <div class="filters">
 
-      <button class="filter" data-category="Revaluation">
-        🔄 Revaluation
-      </button>
+            <button class="filter active" data-filter="all">
+                All
+            </button>
 
-    </div>
+            <button class="filter" data-filter="exams">
+                📝 Exams
+            </button>
 
+            <button class="filter" data-filter="results">
+                📊 Results
+            </button>
 
-    <div class="status">
+            <button class="filter" data-filter="timetable">
+                🗓️ Timetable
+            </button>
 
-      <span class="status-dot"></span>
+            <button class="filter" data-filter="revaluation">
+                🔄 Revaluation
+            </button>
 
-      <span id="statusText">
-        Notifications ready
-      </span>
+            <button class="filter" data-filter="circulars">
+                📢 Circulars
+            </button>
 
-    </div>
+            <button class="filter" data-filter="today">
+                📅 Today
+            </button>
 
+        </div>
 
-    <div
-      class="notifications"
-      id="notifications"
-    ></div>
+        <div class="status" id="status">
+            🔄 Loading notifications...
+        </div>
 
-  </section>
+        <div id="notifications" class="notifications">
+
+            <div class="message">
+                <div class="spinner"></div>
+                Loading notifications...
+            </div>
+
+        </div>
+
+    </section>
 
 </main>
 
+<footer class="footer">
+    <p>
+        Anna University COE Notification Portal
+    </p>
 
-<footer>
-
-  🎓 Anna University COE Notification Portal
-
-  <br>
-
-  Result:
-  <a
-    href="https://coe.annauniv.edu/home/index.php"
-    target="_blank"
-  >
-    Official Result Website
-  </a>
-
-  <br>
-
-  Timetable:
-  <a
-    href="https://aucoe.annauniv.edu/timetable.php"
-    target="_blank"
-  >
-    Official Timetable
-  </a>
-
-  <br>
-
-  Academic:
-  <a
-    href="https://cac.annauniv.edu/"
-    target="_blank"
-  >
-    Academic Courses
-  </a>
-
-  <br>
-
-  Server:
-  <a
-    href="https://dhinakaranelango.github.io/result-server-checker/"
-    target="_blank"
-  >
-    Server Status Checker
-  </a>
-
+    <p>
+        Official Source:
+        <a
+            href="https://coe.annauniv.edu/home/index.php"
+            target="_blank"
+            rel="noopener"
+        >
+            coe.annauniv.edu
+        </a>
+    </p>
 </footer>
-
 
 <script>
 
-/* =====================================================
-   SAVED NOTIFICATIONS
-   These appear immediately even if GitHub Pages
-   cannot load notifications.json.
-   ===================================================== */
+let allNotifications = [];
+let activeFilter = "all";
 
-const savedNotifications = [
+/* DARK MODE */
 
-  {
-    title: "Revaluation Procedure AM26",
-    date: "15-09-2026",
-    url: "https://coe.annauniv.edu/aucoe/pdf/2026_am/Revaluation_Procedure_AM26.pdf"
-  },
+function toggleDark() {
 
-  {
-    title: "Nd26 Except 1st Year Assesment",
-    date: "15-09-2026",
-    url: "https://coe.annauniv.edu/aucoe/pdf/2026_nd/nd26_except_1st_year_assesment.pdf"
-  },
-
-  {
-    title: "AFF AUTO EMIS REG",
-    date: "15-09-2026",
-    url: "http://coe.annauniv.edu/aucoe/pdf/common/AFF_AUTO_EMIS_REG.pdf"
-  }
-
-];
-
-
-let allNotifications = [...savedNotifications];
-
-let activeCategory = "All";
-
-
-/* =====================================================
-   CATEGORY
-   ===================================================== */
-
-function getCategory(item){
-
-  const text = (
-    (item.title || "") +
-    " " +
-    (item.url || "")
-  ).toLowerCase();
-
-  if(
-    text.includes("revaluation") ||
-    text.includes("reval")
-  ){
-    return "Revaluation";
-  }
-
-  if(
-    text.includes("result") ||
-    text.includes("result")
-  ){
-    return "Results";
-  }
-
-  if(
-    text.includes("timetable") ||
-    text.includes("time table")
-  ){
-    return "Timetable";
-  }
-
-  return "Exams";
-}
-
-
-/* =====================================================
-   DISPLAY
-   ===================================================== */
-
-function displayNotifications(list){
-
-  const box = document.getElementById("notifications");
-
-  box.innerHTML = "";
-
-  if(!list.length){
-
-    box.innerHTML = `
-      <div class="empty">
-        🔎 No notifications found.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  list.forEach(item => {
-
-    const title =
-      item.title ||
-      item.notification ||
-      "COE Notification";
-
-    const date =
-      item.date ||
-      "Latest Update";
-
-    const url =
-      item.url ||
-      "https://coe.annauniv.edu/home/index.php";
-
-
-    const card = document.createElement("article");
-
-    card.className = "notification";
-
-
-    card.innerHTML = `
-
-      <div class="notification-date">
-        📅 ${escapeHTML(date)}
-      </div>
-
-      <div class="notification-name">
-        📢 ${escapeHTML(title)}
-      </div>
-
-      <div class="notification-actions">
-
-        <a
-          class="open-btn"
-          href="${escapeAttribute(url)}"
-          target="_blank"
-          rel="noopener"
-        >
-          📄 Open Notification
-        </a>
-
-        <a
-          class="coe-btn"
-          href="https://coe.annauniv.edu/home/index.php"
-          target="_blank"
-          rel="noopener"
-        >
-          🎓 Official COE
-        </a>
-
-      </div>
-    `;
-
-
-    box.appendChild(card);
-
-  });
-
-
-  document.getElementById("totalCount").textContent =
-    allNotifications.length;
-
-
-  const today = new Date();
-
-  const todayString =
-    String(today.getDate()).padStart(2,"0") +
-    "-" +
-    String(today.getMonth()+1).padStart(2,"0") +
-    "-" +
-    today.getFullYear();
-
-
-  const todayItems = allNotifications.filter(item =>
-    (item.date || "") === todayString
-  );
-
-
-  document.getElementById("todayCount").textContent =
-    todayItems.length;
-}
-
-
-/* =====================================================
-   SEARCH + CATEGORY
-   ===================================================== */
-
-function applyFilters(){
-
-  const query =
-    document.getElementById("search")
-      .value
-      .toLowerCase()
-      .trim()
-      .replace(/[_-]+/g," ")
-      .replace(/\s+/g," ");
-
-
-  const filtered = allNotifications.filter(item => {
-
-    const category =
-      getCategory(item);
-
-
-    if(
-      activeCategory !== "All" &&
-      category !== activeCategory
-    ){
-      return false;
-    }
-
-
-    if(!query){
-      return true;
-    }
-
-
-    const text = [
-
-      item.title || "",
-      item.date || "",
-      item.url || "",
-      item.description || "",
-      item.text || ""
-
-    ]
-    .join(" ")
-    .toLowerCase()
-    .replace(/[_-]+/g," ")
-    .replace(/\s+/g," ");
-
-
-    return text.includes(query);
-
-  });
-
-
-  displayNotifications(filtered);
-}
-
-
-/* =====================================================
-   SEARCH
-   ===================================================== */
-
-document
-  .getElementById("search")
-  .addEventListener("input",applyFilters);
-
-
-/* =====================================================
-   FILTER BUTTONS
-   ===================================================== */
-
-document
-  .querySelectorAll(".filter")
-  .forEach(button => {
-
-    button.addEventListener("click",function(){
-
-      document
-        .querySelectorAll(".filter")
-        .forEach(b =>
-          b.classList.remove("active")
-        );
-
-
-      this.classList.add("active");
-
-
-      activeCategory =
-        this.dataset.category;
-
-
-      applyFilters();
-
-    });
-
-  });
-
-
-/* =====================================================
-   LOAD LATEST JSON
-   IMPORTANT:
-   Saved notifications are shown FIRST.
-   JSON has a timeout so page can NEVER stay
-   loading forever.
-   ===================================================== */
-
-async function loadNotifications(){
-
-  /* Show saved data immediately */
-  allNotifications = [...savedNotifications];
-
-  displayNotifications(allNotifications);
-
-  document.getElementById("statusText").textContent =
-    "Checking latest COE notifications...";
-
-
-  const controller =
-    new AbortController();
-
-
-  const timeout =
-    setTimeout(
-      () => controller.abort(),
-      4000
-    );
-
-
-  try{
-
-    const response =
-      await fetch(
-        "./data/notifications.json?v=" +
-        Date.now(),
-        {
-          cache:"no-store",
-          signal:controller.signal
-        }
-      );
-
-
-    if(!response.ok){
-      throw new Error("HTTP " + response.status);
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if(Array.isArray(data) && data.length){
-
-      allNotifications = data;
-
-      displayNotifications(allNotifications);
-
-      document.getElementById("statusText").textContent =
-        "🟢 Latest COE notifications loaded";
-
-    }
-    else{
-
-      document.getElementById("statusText").textContent =
-        "🟢 Saved notifications ready";
-
-    }
-
-
-  }catch(error){
-
-    console.log(
-      "Latest notification fetch unavailable:",
-      error
-    );
-
-
-    /* KEEP SAVED NOTIFICATIONS */
-
-    allNotifications = [...savedNotifications];
-
-    displayNotifications(allNotifications);
-
-
-    document.getElementById("statusText").textContent =
-      "🟢 Notifications ready • COE update check unavailable";
-
-  }finally{
-
-    clearTimeout(timeout);
-
-  }
-
-}
-
-
-/* =====================================================
-   DARK MODE
-   ===================================================== */
-
-function applyDarkMode(){
-
-  const enabled =
-    localStorage.getItem("coe-dark-mode") === "true";
-
-
-  document.body.classList.toggle(
-    "dark",
-    enabled
-  );
-
-
-  const button =
-    document.getElementById("darkButton");
-
-
-  if(button){
-
-    button.textContent =
-      enabled ? "☀️" : "🌙";
-
-    button.title =
-      enabled ? "Light Mode" : "Dark Mode";
-
-  }
-
-}
-
-
-function toggleDarkMode(){
-
-  const enabled =
     document.body.classList.toggle("dark");
 
+    localStorage.setItem(
+        "coe-dark",
+        document.body.classList.contains("dark")
+    );
+}
 
-  localStorage.setItem(
-    "coe-dark-mode",
-    enabled ? "true" : "false"
-  );
-
-
-  const button =
-    document.getElementById("darkButton");
-
-
-  button.textContent =
-    enabled ? "☀️" : "🌙";
-
-
-  button.title =
-    enabled ? "Light Mode" : "Dark Mode";
-
+if (localStorage.getItem("coe-dark") === "true") {
+    document.body.classList.add("dark");
 }
 
 
-/* =====================================================
-   SECURITY HELPERS
-   ===================================================== */
+/* NTFY */
 
-function escapeHTML(value){
+function openNtfy() {
 
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
+    window.open(
+        "https://ntfy.sh/anna-coe-dhina-7x9p4k2",
+        "_blank"
+    );
 }
 
 
-function escapeAttribute(value){
+/* TITLE */
 
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/"/g,"&quot;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+function getTitle(item) {
 
+    let title = item.title || "COE Notification";
+
+    if (
+        title.toLowerCase() === "click here" &&
+        item.url
+    ) {
+
+        let filename = item.url
+            .split("/")
+            .pop()
+            .split("?")[0]
+            .replace(/\.(pdf|docx?|xlsx?)$/i, "")
+            .replace(/[_-]+/g, " ")
+            .trim();
+
+        if (filename) {
+            title = filename;
+        }
+    }
+
+    return title
+        .replace(/\b\w/g, function(letter) {
+            return letter.toUpperCase();
+        });
 }
 
 
-/* ===================================
+/* CATEGORY */
+
+function getCategory(item) {
+
+    let text = (
+        (item.title || "") +
+        " " +
+        (item.url || "")
+    ).toLowerCase();
+
+    if (/revaluation|reval/.test(text)) {
+        return "revaluation";
+    }
+
+    if (/result|results|mark|grade/.test(text)) {
+        return "results";
+    }
+
+    if (/timetable|time-table|schedule/.test(text)) {
+        return "timetable";
+    }
+
+    if (/exam|examination|assessment|semester/.test(text)) {
+        return "exams";
+    }
+
+    return "circulars";
+}
+
+
+/* DATE */
+
+function normaliseDate(date) {
+
+    return String(date || "")
+        .replace(/\//g, "-")
+        .trim();
+}
+
+
+/* ESCAPE HTML */
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* DISPLAY */
+
+function displayNotifications(items) {
+
+    const container = document.getElementById("notifications");
+
+    if (!items.length) {
+
+        container.innerHTML = `
+            <div class="message">
+                🔎 No notifications found.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = items.map(function(item) {
+
+        const title = escapeHtml(getTitle(item));
+        const date = escapeHtml(normaliseDate(item.date));
+        const url = item.url || "#";
+        const category = getCategory(item);
+
+        const categoryNames = {
+            exams: "📝 Exams",
+            results: "📊 Results",
+            timetable: "🗓️ Timetable",
+            revaluation: "🔄 Revaluation",
+            circulars: "📢 Circular"
+        };
+
+        const categoryName =
+            categoryNames[category] || "📢 Circular";
+
+        return `
+            <article class="notification">
+
+                <div class="notification-top">
+
+                    <span class="category">
+                        ${categoryName}
+                    </span>
+
+                    <span class="date">
+                        ${date}
+                    </span>
+
+                </div>
+
+                <h4>${title}</h4>
+
+                <a
+                    class="pdf-link"
+                    href="${url}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    📄 Official COE Notification
+                </a>
+
+                <div class="card-buttons">
+
+                    <a
+                        class="btn btn-primary"
+                        href="${url}"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        📄 Open Notification
+                    </a>
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="shareNotification('${encodeURIComponent(title)}','${encodeURIComponent(url)}')"
+                    >
+                        🔗 Share
+                    </button>
+
+                </div>
+
+            </article>
+        `;
+
+    }).join("");
+}
+
+
+/* SHARE */
+
+function shareNotification(titleEncoded, urlEncoded) {
+
+    const title = decodeURIComponent(titleEncoded);
+    const url = decodeURIComponent(urlEncoded);
+
+    if (navigator.share) {
+
+        navigator.share({
+            title: title,
+            text: title,
+            url: url
+        }).catch(function() {});
+
+    } else {
+
+        navigator.clipboard.writeText(url)
+            .then(function() {
+                alert("Notification link copied!");
+            })
+            .catch(function() {
+                prompt("Copy this link:", url);
+            });
+    }
+}
+
+
+/* FILTER */
+
+function applyFilters() {
+
+    const query = document
+        .getElementById("search")
+        .value
+        .toLowerCase()
+        .trim()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ");
+
+    const today = new Date();
+
+    const todayText =
+        String(today.getDate()).padStart(2, "0") +
+        "-" +
+        String(today.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        today.getFullYear();
+
+    const filtered = allNotifications.filter(function(item) {
+
+        const title = getTitle(item);
+
+        const searchable = (
+            title +
+            " " +
+            (item.date || "") +
+            " " +
+            (item.url || "")
+        )
+        .toLowerCase()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ");
+
+        const matchesSearch =
+            !query || searchable.includes(query);
+
+        const category = getCategory(item);
+
+        let matchesFilter = true;
+
+        if (activeFilter === "today") {
+
+            matchesFilter =
+                normaliseDate(item.date) === todayText;
+
+        } else if (activeFilter !== "all") {
+
+            matchesFilter =
+                category === activeFilter;
+        }
+
+        return matchesSearch && matchesFilter;
+    });
+
+    displayNotifications(filtered);
+
+    document.getElementById("status").textContent =
+        filtered.length +
+        " notification" +
+        (filtered.length === 1 ? "" : "s") +
+        " shown";
+}
+
+
+/* LOAD DATA */
+
+async function loadNotifications() {
+
+    const status = document.getElementById("status");
+    const container = document.getElementById("notifications");
+
+    status.textContent = "🔄 Checking latest notifications...";
+
+    container.innerHTML = `
+        <div class="message">
+            <div class="spinner"></div>
+            Loading notifications...
+        </div>
+    `;
+
+    try {
+
+        const response = await fetch(
+            "data/notifications.json?cache=" + Date.now(),
+            {
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "HTTP " + response.status
+            );
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error("Invalid notification data");
+        }
+
+        allNotifications = data;
+
+        document.getElementById("totalCount").textContent =
+            data.length;
+
+        const today = new Date();
+
+        const todayText =
+            String(today.getDate()).padStart(2, "0") +
+            "-" +
+            String(today.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            today.getFullYear();
+
+        const todayTotal = data.filter(function(item) {
+
+            return normaliseDate(item.date) === todayText;
+
+        }).length;
+
+        document.getElementById("todayCount").textContent =
+            todayTotal;
+
+        status.textContent =
+            "🟢 Updated just now • " +
+            data.length +
+            " notification" +
+            (data.length === 1 ? "" : "s");
+
+        applyFilters();
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "🔴 Unable to load notifications";
+
+        container.innerHTML = `
+            <div class="message">
+
+                <div style="font-size:30px">
+                    ⚠️
+                </div>
+
+                <p>
+                    Unable to load notification data.
+                </p>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="loadNotifications()"
+                >
+                    🔄 Try Again
+                </button>
+
+            </div>
+        `;
+    }
+}
+
+
+/* SEARCH */
+
+document
+    .getElementById("search")
+    .addEventListener("input", applyFilters);
+
+
+/* FILTER BUTTONS */
+
+document
+    .querySelectorAll(".filter")
+    .forEach(function(button) {
+
+        button.addEventListener("click", function() {
+
+            document
+                .querySelectorAll(".filter")
+                .forEach(function(btn) {
+                    btn.classList.remove("active");
+                });
+
+            this.classList.add("active");
+
+            activeFilter =
+                this.getAttribute("data-filter");
+
+            applyFilters();
+        });
+    });
+
+
+/* START */
+
+loadNotifications();
+
+</script>
+
+</body>
+  </html>
