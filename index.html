@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anna University COE Notifications</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #222;
+    }
+
+    header {
+      background: #172554;
+      color: white;
+      padding: 25px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    .status {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px #0001;
+    }
+
+    .search {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .notification {
+      background: white;
+      margin: 12px 0;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0001;
+    }
+
+    .notification h2 {
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+
+    .date {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .notification a {
+      display: inline-block;
+      background: #172554;
+      color: white;
+      text-decoration: none;
+      padding: 9px 14px;
+      border-radius: 7px;
+    }
+
+    .new {
+      display: inline-block;
+      background: #dc2626;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 15px;
+      color: #666;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🎓 Anna University COE</h1>
+  <p>Controller of Examinations Notifications</p>
+</header>
+
+<div class="container">
+
+  <div class="status">
+    🔄 <strong>Notification Portal</strong>
+    <br>
+    <small>Updates are collected from the official Anna University COE website.</small>
+  </div>
+
+  <input
+    type="text"
+    id="search"
+    class="search"
+    placeholder="🔎 Search notifications..."
+  >
+
+  <div id="notifications">
+    <div class="notification">
+      <span class="new">LATEST</span>
+      <h2>Anna University COE Notifications</h2>
+      <div class="date">Visit the official COE website for the latest updates.</div>
+      <a
+        href="https://coe.annauniv.edu/home/index.php"
+        target="_blank"
+        rel="noopener"
+      >
+        Open Official COE Website
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  This is an independent notification portal.<br>
+  Official source: Anna University Controller of Examinations
+</footer>
+
+<script>
+  const search = document.getElementById("search");
+
+  search.addEventListener("input", function () {
+    const text = this.value.toLowerCase();
+
+    document.querySelectorAll(".notification").forEach(card => {
+      card.style.display =
+        card.innerText.toLowerCase().includes(text)
+          ? "block"
+          : "none";
+    });
+  });
+</script>
+
+</body>
+</html>
