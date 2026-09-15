@@ -121,6 +121,16 @@ def parse_page(html, source):
             continue
 
         url = urljoin(source, href)
+        
+        # Use the PDF filename when the website link says "Click Here"
+if title.lower() in {"click here", "clickhere"}:
+    filename = url.split("/")[-1].split("?")[0]
+    filename = re.sub(r"\.(pdf|docx?|xlsx?)$", "", filename, flags=re.I)
+    filename = re.sub(r"[_-]+", " ", filename)
+    filename = re.sub(r"\s+", " ", filename).strip()
+
+    if filename:
+        title = filename.title()
 
         # Get useful surrounding text.
         context_parts = [title]
