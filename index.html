@@ -1,1502 +1,819 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>Anna University COE Notification Portal</title>
-
-<meta
-    name="theme-color"
-    content="#0878f9"
->
-
-<!-- Apply dark mode BEFORE page is displayed -->
-<script>
-(function(){
-
-    try{
-
-        if(
-            localStorage.getItem("coe-dark") === "1"
-        ){
-
-            document.documentElement.classList.add(
-                "dark"
-            );
-
-        }
-
-    }catch(e){}
-
-})();
-</script>
-
+<title>Anna University COE Notifications</title>
 
 <style>
-
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
-:root{
-
-    --blue:#0878f9;
-    --blue2:#075dc9;
-
-    --bg:#f3f7fc;
-    --card:#ffffff;
-
-    --text:#172033;
-    --muted:#718096;
-
-    --border:#e2e8f0;
-    --input:#f4f7fb;
-
-    --shadow:
-        0 8px 28px rgba(30,70,120,.10);
-
+html{
+  scroll-behavior:smooth;
 }
-
-
-/* ================= DARK ================= */
-
-html.dark{
-
-    --bg:#0b111b;
-    --card:#151e2b;
-
-    --text:#f5f7fb;
-    --muted:#9ca8b8;
-
-    --border:#293548;
-    --input:#101823;
-
-    --shadow:
-        0 8px 28px rgba(0,0,0,.35);
-
-}
-
 
 body{
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:var(--bg);
-    color:var(--text);
-
-    transition:
-        background .25s,
-        color .25s;
-
+  font-family:Arial,Helvetica,sans-serif;
+  background:#eef4fb;
+  color:#172033;
+  transition:.3s;
 }
 
+body.dark{
+  background:#0b1020;
+  color:#f4f7ff;
+}
 
-/* ================= HEADER ================= */
+a{
+  text-decoration:none;
+  color:inherit;
+}
+
+/* HEADER */
 
 .header{
-
-    background:
-        linear-gradient(
-            135deg,
-            #075dc9,
-            #0878f9,
-            #1789ff
-        );
-
-    color:white;
-
-    padding:
-        18px
-        15px
-        62px;
-
-    position:relative;
-
-    overflow:hidden;
-
+  background:linear-gradient(135deg,#087cf0,#1260d8);
+  color:white;
+  padding:22px 20px 28px;
+  position:relative;
 }
 
-
-.header:after{
-
-    content:"";
-
-    position:absolute;
-
-    width:330px;
-    height:330px;
-
-    border-radius:50%;
-
-    background:
-        rgba(255,255,255,.07);
-
-    right:-120px;
-    top:-150px;
-
+.header-inner{
+  max-width:1100px;
+  margin:auto;
 }
 
-
-.topbar{
-
-    position:relative;
-    z-index:5;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
+.header-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-
-.brand{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
+.logo{
+  font-size:22px;
+  font-weight:800;
 }
 
-
-.brand-logo{
-
-    width:43px;
-    height:43px;
-
-    border-radius:13px;
-
-    background:
-        rgba(255,255,255,.16);
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:23px;
-
+.logo-sub{
+  font-size:13px;
+  opacity:.85;
+  margin-top:4px;
 }
 
+/* ONLY TWO TOP ICONS */
 
-.brand-title{
-
-    font-size:16px;
-    font-weight:900;
-
+.top-actions{
+  display:flex;
+  gap:9px;
 }
 
-
-.brand-sub{
-
-    margin-top:2px;
-
-    font-size:9px;
-
-    opacity:.82;
-
+.icon-btn{
+  width:43px;
+  height:43px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+  color:white;
+  font-size:21px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.2s;
 }
 
-
-.actions{
-
-    display:flex;
-
-    gap:6px;
-
+.icon-btn:hover{
+  background:rgba(255,255,255,.3);
+  transform:scale(1.06);
 }
 
-
-.action{
-
-    width:40px;
-    height:40px;
-
-    border-radius:12px;
-
-    border:
-        1px solid
-        rgba(255,255,255,.25);
-
-    background:
-        rgba(255,255,255,.14);
-
-    color:white;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    text-decoration:none;
-
-    font-size:19px;
-
-    cursor:pointer;
-
-    -webkit-tap-highlight-color:
-        transparent;
-
-}
-
-
-.action:active{
-
-    transform:scale(.93);
-
-}
-
-
-.hero{
-
-    position:relative;
-
-    z-index:3;
-
-    margin-top:29px;
-
-}
-
-
-.hero h1{
-
-    font-size:34px;
-
-    line-height:1.1;
-
-    font-weight:900;
-
-}
-
-
-.hero p{
-
-    margin-top:9px;
-
-    font-size:12px;
-
-    line-height:1.5;
-
-    opacity:.9;
-
-}
-
-
-/* ================= MAIN ================= */
+/* MAIN */
 
 .container{
-
-    width:
-        min(
-            1100px,
-            calc(100% - 24px)
-        );
-
-    margin:
-        -38px auto 0;
-
-    position:relative;
-
-    z-index:10;
-
+  max-width:1100px;
+  margin:-2px auto 0;
+  padding:0 20px 40px;
 }
 
-
-/* ================= STATS ================= */
+/* STATS */
 
 .stats{
-
-    display:grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:9px;
-
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:-5px;
 }
-
 
 .stat{
-
-    background:var(--card);
-
-    border-radius:17px;
-
-    padding:14px;
-
-    min-height:95px;
-
-    box-shadow:var(--shadow);
-
+  background:white;
+  border-radius:28px;
+  padding:24px;
+  min-height:145px;
+  box-shadow:0 8px 25px rgba(20,50,100,.08);
 }
 
+body.dark .stat,
+body.dark .quick-card,
+body.dark .server-card,
+body.dark .notification-box{
+  background:#151c30;
+  color:#f4f7ff;
+  border-color:#27334f;
+}
 
 .stat-icon{
-
-    font-size:19px;
-
+  font-size:28px;
 }
-
 
 .stat-number{
-
-    margin-top:5px;
-
-    font-size:23px;
-
-    font-weight:900;
-
+  font-size:43px;
+  font-weight:800;
+  margin-top:8px;
 }
-
 
 .stat-label{
-
-    margin-top:3px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
+  color:#8a94a6;
+  margin-top:4px;
 }
 
+/* QUICK LINKS */
 
-/* ================= QUICK LINKS ================= */
-
-.quick-links{
-
-    display:grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap:10px;
-
-    margin-top:12px;
-
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+  margin-top:26px;
 }
 
-
-.quick{
-
-    min-height:82px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-    padding:13px;
-
-    background:var(--card);
-
-    color:var(--text);
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius:17px;
-
-    text-decoration:none;
-
-    box-shadow:
-        0 4px 18px
-        rgba(30,70,120,.05);
-
+.quick-card{
+  background:white;
+  border:1px solid #dce5ef;
+  border-radius:28px;
+  padding:25px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  min-height:150px;
+  box-shadow:0 7px 24px rgba(20,50,100,.06);
+  transition:.2s;
 }
 
-
-.quick:active{
-
-    transform:scale(.98);
-
+.quick-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 30px rgba(20,50,100,.12);
 }
-
 
 .quick-icon{
-
-    width:45px;
-    height:45px;
-
-    flex:none;
-
-    border-radius:13px;
-
-    background:#edf5ff;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:22px;
-
+  width:88px;
+  height:88px;
+  border-radius:25px;
+  background:#edf6ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
+  flex-shrink:0;
 }
-
-
-html.dark .quick-icon{
-
-    background:#202d40;
-
-}
-
 
 .quick-title{
-
-    font-size:13px;
-
-    font-weight:900;
-
+  font-size:22px;
+  font-weight:800;
 }
 
-
-.quick-sub{
-
-    margin-top:4px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
+.quick-desc{
+  margin-top:7px;
+  color:#8a94a6;
+  line-height:1.35;
 }
 
+/* SERVER */
 
-/* SERVER STATUS FULL WIDTH */
-
-.quick.server{
-
-    grid-column:
-        1 / -1;
-
+.server-card{
+  margin-top:20px;
+  background:white;
+  border:1px solid #dce5ef;
+  border-radius:28px;
+  padding:27px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  box-shadow:0 7px 24px rgba(20,50,100,.06);
 }
 
-
-/* ================= PANEL ================= */
-
-.panel{
-
-    margin-top:12px;
-
-    padding:14px;
-
-    background:var(--card);
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius:20px;
-
-    box-shadow:var(--shadow);
-
+.server-icon{
+  width:88px;
+  height:88px;
+  border-radius:25px;
+  background:#edf6ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
 }
 
-
-.panel-head{
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    gap:10px;
-
+.server-title{
+  font-size:21px;
+  font-weight:800;
 }
 
-
-.panel-title{
-
-    font-size:18px;
-
-    font-weight:900;
-
+.server-desc{
+  margin-top:6px;
+  color:#8a94a6;
 }
 
+/* NOTIFICATIONS */
 
-.panel-sub{
-
-    margin-top:4px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
+.notification-box{
+  margin-top:25px;
+  background:white;
+  border:1px solid #dce5ef;
+  border-radius:30px;
+  padding:27px;
+  box-shadow:0 7px 24px rgba(20,50,100,.06);
 }
 
-
-.refresh{
-
-    border:
-        1px solid
-        var(--border);
-
-    background:var(--card);
-
-    color:var(--text);
-
-    border-radius:10px;
-
-    padding:9px 11px;
-
-    font-size:10px;
-
-    font-weight:800;
-
-    cursor:pointer;
-
+.notification-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
 }
-
-
-/* ================= SEARCH ================= */
-
-.search{
-
-    position:relative;
-
-    margin-top:12px;
-
-}
-
-
-.search-icon{
-
-    position:absolute;
-
-    left:13px;
-    top:11px;
-
-    font-size:16px;
-
-}
-
-
-.search input{
-
-    width:100%;
-
-    height:43px;
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius:12px;
-
-    background:var(--input);
-
-    color:var(--text);
-
-    outline:none;
-
-    padding:
-        0
-        12px
-        0
-        41px;
-
-    font-size:11px;
-
-}
-
-
-/* ================= FILTERS ================= */
-
-.filters{
-
-    display:flex;
-
-    gap:7px;
-
-    overflow-x:auto;
-
-    padding:
-        10px
-        0
-        3px;
-
-    scrollbar-width:none;
-
-}
-
-
-.filters::-webkit-scrollbar{
-
-    display:none;
-
-}
-
-
-.filter{
-
-    flex:none;
-
-    border:
-        1px solid
-        var(--border);
-
-    background:var(--card);
-
-    color:var(--text);
-
-    border-radius:20px;
-
-    padding:
-        8px
-        12px;
-
-    font-size:9px;
-
-    white-space:nowrap;
-
-    cursor:pointer;
-
-}
-
-
-.filter.active{
-
-    background:var(--blue);
-
-    color:white;
-
-    border-color:var(--blue);
-
-}
-
-
-/* ================= STATUS ================= */
-
-.status{
-
-    margin:
-        8px
-        2px
-        10px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
-}
-
-
-/* ================= NOTIFICATIONS ================= */
-
-.notifications{
-
-    display:grid;
-
-    gap:9px;
-
-}
-
-
-.notification{
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius:14px;
-
-    padding:12px;
-
-    background:var(--card);
-
-}
-
-
-.notification-row{
-
-    display:flex;
-
-    gap:9px;
-
-}
-
-
-.notification-icon{
-
-    width:38px;
-    height:38px;
-
-    flex:none;
-
-    border-radius:11px;
-
-    background:#edf5ff;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:18px;
-
-}
-
-
-html.dark .notification-icon{
-
-    background:#202d40;
-
-}
-
 
 .notification-title{
-
-    font-size:12px;
-
-    font-weight:900;
-
-    line-height:1.4;
-
+  font-size:30px;
+  font-weight:800;
 }
 
+.notification-sub{
+  color:#8a94a6;
+  margin-top:5px;
+}
+
+.refresh{
+  border:1px solid #dce5ef;
+  background:white;
+  padding:13px 18px;
+  border-radius:17px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:15px;
+}
+
+body.dark .refresh{
+  background:#1b243b;
+  color:white;
+  border-color:#33415e;
+}
+
+/* SEARCH */
+
+.search{
+  width:100%;
+  margin-top:24px;
+  padding:20px 22px;
+  border:2px solid #e1e8f1;
+  border-radius:22px;
+  background:#f5f8fc;
+  font-size:17px;
+  outline:none;
+  color:#172033;
+}
+
+body.dark .search{
+  background:#0f1628;
+  color:white;
+  border-color:#303d59;
+}
+
+.search:focus{
+  border-color:#1684ef;
+}
+
+/* FILTERS */
+
+.filters{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:18px 0 10px;
+  scrollbar-width:none;
+}
+
+.filters::-webkit-scrollbar{
+  display:none;
+}
+
+.filter{
+  flex-shrink:0;
+  border:1px solid #dce5ef;
+  background:white;
+  border-radius:25px;
+  padding:11px 19px;
+  cursor:pointer;
+  font-size:15px;
+}
+
+body.dark .filter{
+  background:#151c30;
+  color:white;
+  border-color:#33415e;
+}
+
+.filter.active{
+  background:#087cf0;
+  color:white;
+  border-color:#087cf0;
+}
+
+/* STATUS */
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#7e8999;
+  font-size:14px;
+  margin:7px 0 18px;
+}
+
+.status-dot{
+  width:13px;
+  height:13px;
+  border-radius:50%;
+  background:#72b532;
+}
+
+/* NOTIFICATION CARDS */
+
+.notifications{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.notification{
+  border:1px solid #dce5ef;
+  border-radius:22px;
+  padding:20px;
+  background:#fbfdff;
+  transition:.2s;
+}
+
+body.dark .notification{
+  background:#10182b;
+  border-color:#2b3854;
+}
+
+.notification:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(20,50,100,.08);
+}
 
 .notification-date{
-
-    margin-top:4px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
+  font-size:13px;
+  color:#087cf0;
+  font-weight:700;
 }
 
-
-.notification-buttons{
-
-    display:flex;
-
-    gap:7px;
-
-    margin-top:10px;
-
+.notification-name{
+  font-size:20px;
+  font-weight:800;
+  margin:7px 0 12px;
+  line-height:1.3;
 }
 
-
-.open{
-
-    display:inline-block;
-
-    background:var(--blue);
-
-    color:white;
-
-    text-decoration:none;
-
-    border-radius:9px;
-
-    padding:
-        8px
-        10px;
-
-    font-size:9px;
-
-    font-weight:800;
-
+.notification-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
 }
 
-
-.share{
-
-    background:var(--card);
-
-    color:var(--text);
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius:9px;
-
-    padding:
-        8px
-        10px;
-
-    font-size:9px;
-
-    font-weight:800;
-
+.open-btn,
+.coe-btn{
+  display:inline-block;
+  padding:11px 15px;
+  border-radius:13px;
+  font-weight:700;
+  font-size:14px;
 }
 
-
-/* ================= MESSAGE ================= */
-
-.message{
-
-    text-align:center;
-
-    padding:
-        35px
-        12px;
-
-    color:var(--muted);
-
-    font-size:10px;
-
+.open-btn{
+  background:#087cf0;
+  color:white;
 }
 
-
-.message-icon{
-
-    font-size:31px;
-
-    margin-bottom:8px;
-
+.coe-btn{
+  background:#edf5ff;
+  color:#0870d8;
 }
 
-
-.message strong{
-
-    color:var(--text);
-
+body.dark .coe-btn{
+  background:#1c2943;
+  color:#70b7ff;
 }
 
+/* EMPTY */
 
-.retry{
-
-    margin-top:11px;
-
-    background:var(--blue);
-
-    color:white;
-
-    border:0;
-
-    border-radius:9px;
-
-    padding:
-        9px
-        13px;
-
-    font-weight:800;
-
+.empty{
+  text-align:center;
+  padding:35px 10px;
+  color:#8994a5;
 }
 
-
-/* ================= SPINNER ================= */
-
-.spinner{
-
-    width:27px;
-    height:27px;
-
-    border:
-        4px solid
-        var(--border);
-
-    border-top-color:
-        var(--blue);
-
-    border-radius:50%;
-
-    margin:
-        0 auto 10px;
-
-    animation:
-        spin .7s linear infinite;
-
-}
-
-
-@keyframes spin{
-
-    to{
-        transform:rotate(360deg);
-    }
-
-}
-
-
-/* ================= FOOTER ================= */
+/* FOOTER */
 
 footer{
-
-    text-align:center;
-
-    padding:
-        28px
-        10px
-        45px;
-
-    color:var(--muted);
-
-    font-size:9px;
-
-    line-height:2;
-
+  text-align:center;
+  padding:35px 15px 45px;
+  color:#8792a4;
+  line-height:2;
 }
-
 
 footer a{
-
-    color:var(--blue);
-
-    text-decoration:none;
-
+  color:#1780d8;
 }
 
+/* MOBILE */
 
-/* ================= MOBILE ================= */
+@media(max-width:700px){
 
-@media(max-width:650px){
+  .header{
+    padding:18px 15px 25px;
+  }
 
-    .quick-links{
+  .container{
+    padding:0 15px 30px;
+  }
 
-        grid-template-columns:
-            1fr 1fr;
+  .logo{
+    font-size:19px;
+  }
 
-    }
+  .logo-sub{
+    font-size:11px;
+  }
 
+  .stats{
+    gap:10px;
+  }
+
+  .stat{
+    padding:17px 12px;
+    min-height:125px;
+    border-radius:24px;
+  }
+
+  .stat-icon{
+    font-size:23px;
+  }
+
+  .stat-number{
+    font-size:34px;
+  }
+
+  .stat-label{
+    font-size:12px;
+  }
+
+  .quick-grid{
+    gap:12px;
+  }
+
+  .quick-card{
+    padding:17px;
+    min-height:135px;
+    border-radius:24px;
+    gap:13px;
+  }
+
+  .quick-icon{
+    width:67px;
+    height:67px;
+    border-radius:20px;
+    font-size:31px;
+  }
+
+  .quick-title{
+    font-size:17px;
+  }
+
+  .quick-desc{
+    font-size:13px;
+  }
+
+  .server-card{
+    padding:20px;
+    border-radius:24px;
+  }
+
+  .server-icon{
+    width:65px;
+    height:65px;
+    font-size:31px;
+  }
+
+  .server-title{
+    font-size:17px;
+  }
+
+  .notification-box{
+    padding:20px 15px;
+    border-radius:26px;
+  }
+
+  .notification-title{
+    font-size:27px;
+  }
+
+  .notification-head{
+    align-items:flex-start;
+  }
+
+  .refresh{
+    padding:10px 12px;
+  }
+
+  .notification-name{
+    font-size:18px;
+  }
 }
-
-
-@media(max-width:420px){
-
-    .hero h1{
-
-        font-size:30px;
-
-    }
-
-    .action{
-
-        width:38px;
-        height:38px;
-
-    }
-
-    .brand-title{
-
-        font-size:14px;
-
-    }
-
-    .brand-sub{
-
-        font-size:8px;
-
-    }
-
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
-<!-- =================================================
-     HEADER
-================================================= -->
-
 <header class="header">
 
-    <div class="topbar">
+  <div class="header-inner">
 
-        <div class="brand">
+    <div class="header-top">
 
-            <div class="brand-logo">
-                🎓
-            </div>
-
-            <div>
-
-                <div class="brand-title">
-                    Anna University COE
-                </div>
-
-                <div class="brand-sub">
-                    Controller of Examinations
-                </div>
-
-            </div>
-
+      <div>
+        <div class="logo">🎓 Anna University COE</div>
+        <div class="logo-sub">
+          Controller of Examinations Notifications
         </div>
+      </div>
 
+      <!-- ONLY TWO ICONS -->
+      <div class="top-actions">
 
-        <div class="actions">
+        <a
+          class="icon-btn"
+          href="https://ntfy.sh/anna-coe-dhina-7x9p4k2"
+          target="_blank"
+          title="Notifications"
+        >🔔</a>
 
+        <button
+          class="icon-btn"
+          id="darkButton"
+          onclick="toggleDarkMode()"
+          title="Dark Mode"
+        >🌙</button>
 
-            <!-- ALERTS -->
-
-            <a
-                class="action"
-                href="https://ntfy.sh/anna-coe-dhina-7x9p4k2"
-                target="_blank"
-                rel="noopener"
-                title="COE Alerts"
-            >
-                🔔
-            </a>
-
-
-            <!-- TIMETABLE -->
-
-            <a
-                class="action"
-                href="https://aucoe.annauniv.edu/timetable.php"
-                target="_blank"
-                rel="noopener"
-                title="Exam Timetable"
-            >
-                📅
-            </a>
-
-
-            <!-- ACADEMIC -->
-
-            <a
-                class="action"
-                href="https://cac.annauniv.edu/"
-                target="_blank"
-                rel="noopener"
-                title="Academic Courses"
-            >
-                📚
-            </a>
-
-
-            <!-- DARK MODE -->
-
-            <button
-                class="action"
-                id="darkButton"
-                type="button"
-                title="Dark Mode"
-            >
-                🌙
-            </button>
-
-
-        </div>
+      </div>
 
     </div>
 
-
-    <div class="hero">
-
-        <h1>
-            COE Notification Portal
-        </h1>
-
-        <p>
-            Latest Anna University examination
-            notifications, results, timetables,
-            academic schedules and important updates.
-        </p>
-
-    </div>
+  </div>
 
 </header>
 
 
-<!-- =================================================
-     MAIN
-================================================= -->
-
 <main class="container">
 
+  <!-- STATS -->
 
-    <!-- STATS -->
+  <section class="stats">
 
-    <section class="stats">
+    <div class="stat">
+      <div class="stat-icon">📢</div>
+      <div class="stat-number" id="totalCount">0</div>
+      <div class="stat-label">Total Notifications</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-icon">📅</div>
+      <div class="stat-number" id="todayCount">0</div>
+      <div class="stat-label">Today's Updates</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-icon">🟢</div>
+      <div class="stat-number">LIVE</div>
+      <div class="stat-label">COE Monitor</div>
+    </div>
+
+  </section>
 
 
-        <div class="stat">
+  <!-- QUICK LINKS -->
 
-            <div class="stat-icon">
-                📢
-            </div>
+  <section class="quick-grid">
 
-            <div
-                class="stat-number"
-                id="totalCount"
-            >
-                3
-            </div>
+    <a
+      class="quick-card"
+      href="https://aucoe.annauniv.edu/timetable.php"
+      target="_blank"
+    >
+      <div class="quick-icon">📅</div>
 
-            <div class="stat-label">
-                Total Notifications
-            </div>
+      <div>
+        <div class="quick-title">Examination Timetable</div>
+        <div class="quick-desc">
+          Official Anna University COE
+        </div>
+      </div>
+    </a>
 
+
+    <a
+      class="quick-card"
+      href="https://coe.annauniv.edu/home/index.php"
+      target="_blank"
+    >
+      <div class="quick-icon">🎓</div>
+
+      <div>
+        <div class="quick-title">Official Result Website</div>
+        <div class="quick-desc">
+          Anna University COE
+        </div>
+      </div>
+    </a>
+
+
+    <a
+      class="quick-card"
+      href="https://cac.annauniv.edu/"
+      target="_blank"
+    >
+      <div class="quick-icon">📚</div>
+
+      <div>
+        <div class="quick-title">Academic Courses</div>
+        <div class="quick-desc">
+          Schedule • Calendar • Regulations
+        </div>
+      </div>
+    </a>
+
+  </section>
+
+
+  <!-- SERVER -->
+
+  <a
+    class="server-card"
+    href="https://dhinakaranelango.github.io/result-server-checker/"
+    target="_blank"
+  >
+
+    <div class="server-icon">📡</div>
+
+    <div>
+      <div class="server-title">
+        Anna University Server Status Checker
+      </div>
+
+      <div class="server-desc">
+        Check Result Server Availability
+      </div>
+    </div>
+
+  </a>
+
+
+  <!-- NOTIFICATIONS -->
+
+  <section class="notification-box">
+
+    <div class="notification-head">
+
+      <div>
+        <div class="notification-title">
+          Latest Notifications
         </div>
 
-
-        <div class="stat">
-
-            <div class="stat-icon">
-                📅
-            </div>
-
-            <div
-                class="stat-number"
-                id="todayCount"
-            >
-                3
-            </div>
-
-            <div class="stat-label">
-                Today's Updates
-            </div>
-
+        <div class="notification-sub">
+          Automatically updated from COE
         </div>
+      </div>
 
+      <button
+        class="refresh"
+        onclick="loadNotifications()"
+      >
+        🔄 Refresh
+      </button>
 
-        <div class="stat">
+    </div>
 
-            <div class="stat-icon">
-                🟢
-            </div>
 
-            <div
-                class="stat-number"
-                id="liveStatus"
-            >
-                LIVE
-            </div>
+    <input
+      class="search"
+      id="search"
+      type="search"
+      placeholder="🔎  Search notifications..."
+      autocomplete="off"
+    >
 
-            <div class="stat-label">
-                COE Monitor
-            </div>
 
-        </div>
+    <div class="filters">
 
+      <button class="filter active" data-category="All">
+        All
+      </button>
 
-    </section>
+      <button class="filter" data-category="Exams">
+        📝 Exams
+      </button>
 
+      <button class="filter" data-category="Results">
+        📊 Results
+      </button>
 
-    <!-- =================================================
-         QUICK LINKS
-    ================================================= -->
+      <button class="filter" data-category="Timetable">
+        📅 Timetable
+      </button>
 
-    <section class="quick-links">
+      <button class="filter" data-category="Revaluation">
+        🔄 Revaluation
+      </button>
 
+    </div>
 
-        <!-- EXAM TIMETABLE -->
 
-        <a
-            class="quick"
-            href="https://aucoe.annauniv.edu/timetable.php"
-            target="_blank"
-            rel="noopener"
-        >
+    <div class="status">
 
-            <div class="quick-icon">
-                📅
-            </div>
+      <span class="status-dot"></span>
 
-            <div>
+      <span id="statusText">
+        Notifications ready
+      </span>
 
-                <div class="quick-title">
-                    Examination Timetable
-                </div>
+    </div>
 
-                <div class="quick-sub">
-                    Official Anna University COE
-                </div>
 
-            </div>
+    <div
+      class="notifications"
+      id="notifications"
+    ></div>
 
-        </a>
-
-
-        <!-- RESULT WEBSITE -->
-
-        <a
-            class="quick"
-            href="https://coe.annauniv.edu/home/index.php"
-            target="_blank"
-            rel="noopener"
-        >
-
-            <div class="quick-icon">
-                🎓
-            </div>
-
-            <div>
-
-                <div class="quick-title">
-                    Official Result Website
-                </div>
-
-                <div class="quick-sub">
-                    Anna University COE
-                </div>
-
-            </div>
-
-        </a>
-
-
-        <!-- ACADEMIC COURSES -->
-
-        <a
-            class="quick"
-            href="https://cac.annauniv.edu/"
-            target="_blank"
-            rel="noopener"
-        >
-
-            <div class="quick-icon">
-                📚
-            </div>
-
-            <div>
-
-                <div class="quick-title">
-                    Academic Courses
-                </div>
-
-                <div class="quick-sub">
-                    Schedule • Calendar • Regulations
-                </div>
-
-            </div>
-
-        </a>
-
-
-        <!-- SERVER STATUS -->
-
-        <a
-            class="quick server"
-            href="https://dhinakaranelango.github.io/result-server-checker/"
-            target="_blank"
-            rel="noopener"
-        >
-
-            <div class="quick-icon">
-                📡
-            </div>
-
-            <div>
-
-                <div class="quick-title">
-                    Anna University Server Status Checker
-                </div>
-
-                <div class="quick-sub">
-                    Check Result Server Availability
-                </div>
-
-            </div>
-
-        </a>
-
-
-    </section>
-
-
-    <!-- =================================================
-         NOTIFICATIONS
-    ================================================= -->
-
-    <section class="panel">
-
-
-        <div class="panel-head">
-
-            <div>
-
-                <div class="panel-title">
-                    Latest Notifications
-                </div>
-
-                <div class="panel-sub">
-                    Automatically updated from COE
-                </div>
-
-            </div>
-
-
-            <button
-                class="refresh"
-                id="refreshButton"
-                type="button"
-            >
-                🔄 Refresh
-            </button>
-
-        </div>
-
-
-        <!-- SEARCH -->
-
-        <div class="search">
-
-            <span class="search-icon">
-                🔍
-            </span>
-
-            <input
-                id="search"
-                type="search"
-                placeholder="Search notifications..."
-                autocomplete="off"
-            >
-
-        </div>
-
-
-        <!-- FILTERS -->
-
-        <div class="filters">
-
-            <button
-                class="filter active"
-                data-filter="all"
-                type="button"
-            >
-                All
-            </button>
-
-            <button
-                class="filter"
-                data-filter="exams"
-                type="button"
-            >
-                📝 Exams
-            </button>
-
-            <button
-                class="filter"
-                data-filter="results"
-                type="button"
-            >
-                📊 Results
-            </button>
-
-            <button
-                class="filter"
-                data-filter="timetable"
-                type="button"
-            >
-                📅 Timetable
-            </button>
-
-            <button
-                class="filter"
-                data-filter="revaluation"
-                type="button"
-            >
-                🔄 Revaluation
-            </button>
-
-            <button
-                class="filter"
-                data-filter="circulars"
-                type="button"
-            >
-                📢 Circulars
-            </button>
-
-            <button
-                class="filter"
-                data-filter="today"
-                type="button"
-            >
-                📅 Today
-            </button>
-
-        </div>
-
-
-        <div
-            class="status"
-            id="status"
-        >
-            🟢 Notifications ready
-        </div>
-
-
-        <div
-            class="notifications"
-            id="notifications"
-        ></div>
-
-
-    </section>
+  </section>
 
 </main>
 
 
-<!-- =================================================
-     FOOTER
-================================================= -->
-
 <footer>
 
-    🎓 Anna University COE Notification Portal
+  🎓 Anna University COE Notification Portal
 
-    <br>
+  <br>
 
-    Result:
-    <a
-        href="https://coe.annauniv.edu/home/index.php"
-        target="_blank"
-        rel="noopener"
-    >
-        Official Result Website
-    </a>
+  Result:
+  <a
+    href="https://coe.annauniv.edu/home/index.php"
+    target="_blank"
+  >
+    Official Result Website
+  </a>
 
-    <br>
+  <br>
 
-    Timetable:
-    <a
-        href="https://aucoe.annauniv.edu/timetable.php"
-        target="_blank"
-        rel="noopener"
-    >
-        Official Timetable
-    </a>
+  Timetable:
+  <a
+    href="https://aucoe.annauniv.edu/timetable.php"
+    target="_blank"
+  >
+    Official Timetable
+  </a>
 
-    <br>
+  <br>
 
-    Academic:
-    <a
-        href="https://cac.annauniv.edu/"
-        target="_blank"
-        rel="noopener"
-    >
-        Academic Courses
-    </a>
+  Academic:
+  <a
+    href="https://cac.annauniv.edu/"
+    target="_blank"
+  >
+    Academic Courses
+  </a>
 
-    <br>
+  <br>
 
-    Server:
-    <a
-        href="https://dhinakaranelango.github.io/result-server-checker/"
-        target="_blank"
-        rel="noopener"
-    >
-        Server Status Checker
-    </a>
+  Server:
+  <a
+    href="https://dhinakaranelango.github.io/result-server-checker/"
+    target="_blank"
+  >
+    Server Status Checker
+  </a>
 
 </footer>
 
@@ -1504,57 +821,461 @@ footer a{
 <script>
 
 /* =====================================================
-   COE PORTAL
-===================================================== */
+   SAVED NOTIFICATIONS
+   These appear immediately even if GitHub Pages
+   cannot load notifications.json.
+   ===================================================== */
 
-"use strict";
+const savedNotifications = [
 
+  {
+    title: "Revaluation Procedure AM26",
+    date: "15-09-2026",
+    url: "https://coe.annauniv.edu/aucoe/pdf/2026_am/Revaluation_Procedure_AM26.pdf"
+  },
 
-/* =====================================================
-   FALLBACK DATA
-   This means the page NEVER depends on the network
-   just to display notifications.
-===================================================== */
+  {
+    title: "Nd26 Except 1st Year Assesment",
+    date: "15-09-2026",
+    url: "https://coe.annauniv.edu/aucoe/pdf/2026_nd/nd26_except_1st_year_assesment.pdf"
+  },
 
-const fallbackNotifications = [
-
-    {
-        title:
-            "Revaluation Procedure AM26",
-
-        date:
-            "15-09-2026",
-
-        url:
-            "https://coe.annauniv.edu/aucoe/pdf/2026_am/Revaluation_Procedure_AM26.pdf"
-    },
-
-
-    {
-        title:
-            "Nd26 Except 1st Year Assesment",
-
-        date:
-            "15-09-2026",
-
-        url:
-            "https://coe.annauniv.edu/aucoe/pdf/2026_nd/nd26_except_1st_year_assesment.pdf"
-    },
-
-
-    {
-        title:
-            "AFF AUTO EMIS REG",
-
-        date:
-            "15-09-2026",
-
-        url:
-            "http://coe.annauniv.edu/aucoe/pdf/common/AFF_AUTO_EMIS_REG.pdf"
-    }
+  {
+    title: "AFF AUTO EMIS REG",
+    date: "15-09-2026",
+    url: "http://coe.annauniv.edu/aucoe/pdf/common/AFF_AUTO_EMIS_REG.pdf"
+  }
 
 ];
 
 
-let allNotifications =
-    fallbackNotific
+let allNotifications = [...savedNotifications];
+
+let activeCategory = "All";
+
+
+/* =====================================================
+   CATEGORY
+   ===================================================== */
+
+function getCategory(item){
+
+  const text = (
+    (item.title || "") +
+    " " +
+    (item.url || "")
+  ).toLowerCase();
+
+  if(
+    text.includes("revaluation") ||
+    text.includes("reval")
+  ){
+    return "Revaluation";
+  }
+
+  if(
+    text.includes("result") ||
+    text.includes("result")
+  ){
+    return "Results";
+  }
+
+  if(
+    text.includes("timetable") ||
+    text.includes("time table")
+  ){
+    return "Timetable";
+  }
+
+  return "Exams";
+}
+
+
+/* =====================================================
+   DISPLAY
+   ===================================================== */
+
+function displayNotifications(list){
+
+  const box = document.getElementById("notifications");
+
+  box.innerHTML = "";
+
+  if(!list.length){
+
+    box.innerHTML = `
+      <div class="empty">
+        🔎 No notifications found.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  list.forEach(item => {
+
+    const title =
+      item.title ||
+      item.notification ||
+      "COE Notification";
+
+    const date =
+      item.date ||
+      "Latest Update";
+
+    const url =
+      item.url ||
+      "https://coe.annauniv.edu/home/index.php";
+
+
+    const card = document.createElement("article");
+
+    card.className = "notification";
+
+
+    card.innerHTML = `
+
+      <div class="notification-date">
+        📅 ${escapeHTML(date)}
+      </div>
+
+      <div class="notification-name">
+        📢 ${escapeHTML(title)}
+      </div>
+
+      <div class="notification-actions">
+
+        <a
+          class="open-btn"
+          href="${escapeAttribute(url)}"
+          target="_blank"
+          rel="noopener"
+        >
+          📄 Open Notification
+        </a>
+
+        <a
+          class="coe-btn"
+          href="https://coe.annauniv.edu/home/index.php"
+          target="_blank"
+          rel="noopener"
+        >
+          🎓 Official COE
+        </a>
+
+      </div>
+    `;
+
+
+    box.appendChild(card);
+
+  });
+
+
+  document.getElementById("totalCount").textContent =
+    allNotifications.length;
+
+
+  const today = new Date();
+
+  const todayString =
+    String(today.getDate()).padStart(2,"0") +
+    "-" +
+    String(today.getMonth()+1).padStart(2,"0") +
+    "-" +
+    today.getFullYear();
+
+
+  const todayItems = allNotifications.filter(item =>
+    (item.date || "") === todayString
+  );
+
+
+  document.getElementById("todayCount").textContent =
+    todayItems.length;
+}
+
+
+/* =====================================================
+   SEARCH + CATEGORY
+   ===================================================== */
+
+function applyFilters(){
+
+  const query =
+    document.getElementById("search")
+      .value
+      .toLowerCase()
+      .trim()
+      .replace(/[_-]+/g," ")
+      .replace(/\s+/g," ");
+
+
+  const filtered = allNotifications.filter(item => {
+
+    const category =
+      getCategory(item);
+
+
+    if(
+      activeCategory !== "All" &&
+      category !== activeCategory
+    ){
+      return false;
+    }
+
+
+    if(!query){
+      return true;
+    }
+
+
+    const text = [
+
+      item.title || "",
+      item.date || "",
+      item.url || "",
+      item.description || "",
+      item.text || ""
+
+    ]
+    .join(" ")
+    .toLowerCase()
+    .replace(/[_-]+/g," ")
+    .replace(/\s+/g," ");
+
+
+    return text.includes(query);
+
+  });
+
+
+  displayNotifications(filtered);
+}
+
+
+/* =====================================================
+   SEARCH
+   ===================================================== */
+
+document
+  .getElementById("search")
+  .addEventListener("input",applyFilters);
+
+
+/* =====================================================
+   FILTER BUTTONS
+   ===================================================== */
+
+document
+  .querySelectorAll(".filter")
+  .forEach(button => {
+
+    button.addEventListener("click",function(){
+
+      document
+        .querySelectorAll(".filter")
+        .forEach(b =>
+          b.classList.remove("active")
+        );
+
+
+      this.classList.add("active");
+
+
+      activeCategory =
+        this.dataset.category;
+
+
+      applyFilters();
+
+    });
+
+  });
+
+
+/* =====================================================
+   LOAD LATEST JSON
+   IMPORTANT:
+   Saved notifications are shown FIRST.
+   JSON has a timeout so page can NEVER stay
+   loading forever.
+   ===================================================== */
+
+async function loadNotifications(){
+
+  /* Show saved data immediately */
+  allNotifications = [...savedNotifications];
+
+  displayNotifications(allNotifications);
+
+  document.getElementById("statusText").textContent =
+    "Checking latest COE notifications...";
+
+
+  const controller =
+    new AbortController();
+
+
+  const timeout =
+    setTimeout(
+      () => controller.abort(),
+      4000
+    );
+
+
+  try{
+
+    const response =
+      await fetch(
+        "./data/notifications.json?v=" +
+        Date.now(),
+        {
+          cache:"no-store",
+          signal:controller.signal
+        }
+      );
+
+
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if(Array.isArray(data) && data.length){
+
+      allNotifications = data;
+
+      displayNotifications(allNotifications);
+
+      document.getElementById("statusText").textContent =
+        "🟢 Latest COE notifications loaded";
+
+    }
+    else{
+
+      document.getElementById("statusText").textContent =
+        "🟢 Saved notifications ready";
+
+    }
+
+
+  }catch(error){
+
+    console.log(
+      "Latest notification fetch unavailable:",
+      error
+    );
+
+
+    /* KEEP SAVED NOTIFICATIONS */
+
+    allNotifications = [...savedNotifications];
+
+    displayNotifications(allNotifications);
+
+
+    document.getElementById("statusText").textContent =
+      "🟢 Notifications ready • COE update check unavailable";
+
+  }finally{
+
+    clearTimeout(timeout);
+
+  }
+
+}
+
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+function applyDarkMode(){
+
+  const enabled =
+    localStorage.getItem("coe-dark-mode") === "true";
+
+
+  document.body.classList.toggle(
+    "dark",
+    enabled
+  );
+
+
+  const button =
+    document.getElementById("darkButton");
+
+
+  if(button){
+
+    button.textContent =
+      enabled ? "☀️" : "🌙";
+
+    button.title =
+      enabled ? "Light Mode" : "Dark Mode";
+
+  }
+
+}
+
+
+function toggleDarkMode(){
+
+  const enabled =
+    document.body.classList.toggle("dark");
+
+
+  localStorage.setItem(
+    "coe-dark-mode",
+    enabled ? "true" : "false"
+  );
+
+
+  const button =
+    document.getElementById("darkButton");
+
+
+  button.textContent =
+    enabled ? "☀️" : "🌙";
+
+
+  button.title =
+    enabled ? "Light Mode" : "Dark Mode";
+
+}
+
+
+/* =====================================================
+   SECURITY HELPERS
+   ===================================================== */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttribute(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+}
+
+
+/* ===================================
