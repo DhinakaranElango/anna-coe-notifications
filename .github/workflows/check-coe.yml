@@ -32,7 +32,7 @@ jobs:
         run: |
           python checker.py
 
-      - name: Send ntfy notifications for new COE notifications
+      - name: Detect new and updated COE notifications
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
@@ -41,46 +41,153 @@ jobs:
           import subprocess
           import os
 
+          # Read the previous version from Git
           old_data = subprocess.check_output(
               ["git", "show", "HEAD:data/notifications.json"],
               text=True
           )
 
           old_items = json.loads(old_data)
-          new_items = json.load(open("data/notifications.json"))
 
-          old_urls = {
-              item.get("url")
+          # Read the newly downloaded version
+          with open("data/notifications.json", "r", encoding="utf-8") as f:
+              new_items = json.load(f)
+
+          # Create lookup tables by notification URL
+          old_by_url = {
+              item.get("url"): item
               for item in old_items
               if item.get("url")
           }
 
-          new_items_found = [
-              item for item in new_items
+          new_by_url = {
+              item.get("url"): item
+              for item in new_items
               if item.get("url")
-              and item.get("url") not in old_urls
-          ]
+          }
 
-          print(f"New notifications found: {len(new_items_found)}")
+          new_notifications = []
+          updated_notifications = []
 
-          for item in new_items_found:
+          # Check every current notification
+          for url, new_item in new_by_url.items():
 
-              title = item.get("title") or "New COE Notification"
+              # Completely new URL
+              if url not in old_by_url:
+                  new_notifications.append(new_item)
+                  continue
+
+              old_item = old_by_url[url]
+
+              # Compare meaningful notification information
+              fields_to_compare = [
+                  "title",
+                  "date",
+                  "text",
+                  "description",
+                  "content",
+                  "notice",
+                  "notification"
+              ]
+
+              changed = False
+
+              for field in fields_to_compare:
+                  old_value = old_item.get(field)
+                  new_value = new_item.get(field)
+
+                  if old_value != new_value:
+                      changed = True
+                      print(
+                          f"Updated field detected: {field} "
+                          f"for {url}"
+                      )
+
+              if changed:
+                  updated_notifications.append(new_item)
+
+          print(
+              f"New notifications: {len(new_notifications)}"
+          )
+
+          print(
+              f"Updated notifications: {len(updated_notifications)}"
+          )
+
+          # Send NEW notifications
+          for item in new_notifications:
+
+              title = (
+                  item.get("title")
+                  or "New COE Notification"
+              )
+
               url = item.get("url")
 
-              message = f"🎓 Anna University COE\n\n📢 {title}\n\n📄 Open PDF:\n{url}"
+              message = (
+                  f"🎓 Anna University COE\n\n"
+                  f"🆕 NEW NOTIFICATION\n\n"
+                  f"📢 {title}\n\n"
+                  f"📄 Open PDF:\n"
+                  f"{url}"
+              )
 
               subprocess.run([
                   "curl",
                   "-sS",
-                  "-X", "POST",
-                  "-H", "Title: 🎓 New COE Notification",
-                  "-H", "Priority: 4",
-                  "-H", "Tags: graduation_cap",
-                  "-H", f"Click: {url}",
+                  "-X",
+                  "POST",
+                  "-H",
+                  "Title: 🆕 New COE Notification",
+                  "-H",
+                  "Priority: 4",
+                  "-H",
+                  "Tags: graduation_cap,new",
+                  "-H",
+                  f"Click: {url}",
                   f"https://ntfy.sh/{os.environ['NTFY_TOPIC']}",
-                  "-d", message
+                  "-d",
+                  message
               ], check=True)
+
+          # Send UPDATED notifications
+          for item in updated_notifications:
+
+              title = (
+                  item.get("title")
+                  or "COE Notification Updated"
+              )
+
+              url = item.get("url")
+
+              message = (
+                  f"🎓 Anna University COE\n\n"
+                  f"🔄 NOTIFICATION UPDATED\n\n"
+                  f"📢 {title}\n\n"
+                  f"✏️ The notification information "
+                  f"has been updated.\n\n"
+                  f"📄 Open PDF:\n"
+                  f"{url}"
+              )
+
+              subprocess.run([
+                  "curl",
+                  "-sS",
+                  "-X",
+                  "POST",
+                  "-H",
+                  "Title: 🔄 COE Notification Updated",
+                  "-H",
+                  "Priority: 4",
+                  "-H",
+                  "Tags: graduation_cap,arrows_counterclockwise",
+                  "-H",
+                  f"Click: {url}",
+                  f"https://ntfy.sh/{os.environ['NTFY_TOPIC']}",
+                  "-d",
+                  message
+              ], check=True)
+
           PY
 
       - name: Commit updated notifications
