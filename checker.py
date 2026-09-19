@@ -519,6 +519,34 @@ if html:
         PRIMARY
     )
 
+print("DEBUG: Total HTML length:", len(html))
+
+debug_soup = BeautifulSoup(html, "html.parser")
+
+print("DEBUG: All visible page text:")
+print(
+    debug_soup.get_text(
+        " ",
+        strip=True
+    )[:10000]
+)
+
+print("DEBUG: All links:")
+
+for debug_link in debug_soup.find_all(
+    "a",
+    href=True
+):
+    print(
+        "LINK:",
+        debug_link.get_text(
+            " ",
+            strip=True
+        ),
+        "=>",
+        debug_link.get("href")
+    )
+
 if not items:
     print(
         "Primary COE page produced no "
