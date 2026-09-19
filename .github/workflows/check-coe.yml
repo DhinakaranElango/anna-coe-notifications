@@ -3,200 +3,366 @@ name: Check Anna University COE
 on:
   schedule:
     - cron: "*/5 * * * *"
+
   workflow_dispatch:
+
 
 permissions:
   contents: write
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+
   check-coe:
+
     runs-on: ubuntu-latest
 
+
     steps:
+
+      # ------------------------------------------------------
+      # Checkout repository
+      # ------------------------------------------------------
+
       - name: Checkout repository
+
         uses: actions/checkout@v5
 
+
+      # ------------------------------------------------------
+      # Python
+      # ------------------------------------------------------
+
       - name: Set up Python
+
         uses: actions/setup-python@v6
+
         with:
           python-version: "3.12"
 
+
+      # ------------------------------------------------------
+      # Install required packages
+      # ------------------------------------------------------
+
       - name: Install dependencies
+
         run: |
-          pip install requests beautifulsoup4
+          pip install requests beautifulsoup4 urllib3
+
+
+      # ------------------------------------------------------
+      # Check Anna University COE
+      # ------------------------------------------------------
 
       - name: Check COE website
+
         run: |
           python checker.py
 
-      - name: Detect new and updated COE notifications
+
+      # ------------------------------------------------------
+      # Detect changes
+      # ------------------------------------------------------
+
+      - name: Detect notification changes
+
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+
         run: |
+
           python - <<'PY'
+
           import json
           import subprocess
           import os
 
-          # Read the previous version from Git
+
+          # --------------------------------------------------
+          # Read previous Git version
+          # --------------------------------------------------
+
           old_data = subprocess.check_output(
-              ["git", "show", "HEAD:data/notifications.json"],
+              [
+                  "git",
+                  "show",
+                  "HEAD:data/notifications.json"
+              ],
               text=True
           )
 
-          old_items = json.loads(old_data)
 
-          # Read the newly downloaded version
-          with open("data/notifications.json", "r", encoding="utf-8") as f:
-              new_items = json.load(f)
+          old_items = json.loads(
+              old_data
+          )
 
-          # Create lookup tables by notification URL
+
+          # --------------------------------------------------
+          # Read newly generated version
+          # --------------------------------------------------
+
+          with open(
+              "data/notifications.json",
+              "r",
+              encoding="utf-8"
+          ) as file:
+
+              new_items = json.load(
+                  file
+              )
+
+
+          # --------------------------------------------------
+          # Build lookup tables
+          # --------------------------------------------------
+
           old_by_url = {
+
               item.get("url"): item
+
               for item in old_items
+
               if item.get("url")
           }
+
 
           new_by_url = {
+
               item.get("url"): item
+
               for item in new_items
+
               if item.get("url")
           }
 
+
           new_notifications = []
+
           updated_notifications = []
 
-          # Check every current notification
+
+          # --------------------------------------------------
+          # Compare notifications
+          # --------------------------------------------------
+
           for url, new_item in new_by_url.items():
 
-              # Completely new URL
+              # Completely new notification.
               if url not in old_by_url:
-                  new_notifications.append(new_item)
+
+                  new_notifications.append(
+                      new_item
+                  )
+
                   continue
+
 
               old_item = old_by_url[url]
 
-              # Compare meaningful notification information
-              fields_to_compare = [
+
+              fields = [
                   "title",
                   "date",
-                  "text",
-                  "description",
-                  "content",
-                  "notice",
-                  "notification"
+                  "description"
               ]
+
 
               changed = False
 
-              for field in fields_to_compare:
-                  old_value = old_item.get(field)
-                  new_value = new_item.get(field)
 
-                  if old_value != new_value:
+              for field in fields:
+
+                  if (
+                      old_item.get(field)
+                      !=
+                      new_item.get(field)
+                  ):
+
                       changed = True
+
                       print(
-                          f"Updated field detected: {field} "
-                          f"for {url}"
+                          f"Updated field: {field}"
                       )
 
+
               if changed:
-                  updated_notifications.append(new_item)
+
+                  updated_notifications.append(
+                      new_item
+                  )
+
 
           print(
-              f"New notifications: {len(new_notifications)}"
+              f"New notifications: "
+              f"{len(new_notifications)}"
           )
+
 
           print(
-              f"Updated notifications: {len(updated_notifications)}"
+              f"Updated notifications: "
+              f"{len(updated_notifications)}"
           )
 
-          # Send NEW notifications
-          for item in new_notifications:
 
-              title = (
-                  item.get("title")
-                  or "New COE Notification"
+          # --------------------------------------------------
+          # Send NEW notification alert
+          # --------------------------------------------------
+
+          topic = os.environ.get(
+              "NTFY_TOPIC",
+              ""
+          ).strip()
+
+
+          if topic:
+
+              for item in new_notifications:
+
+                  title = (
+                      item.get("title")
+                      or
+                      "New COE Notification"
+                  )
+
+
+                  url = (
+                      item.get("url")
+                      or
+                      ""
+                  )
+
+
+                  message = (
+                      "🎓 Anna University COE\n\n"
+                      "🆕 NEW NOTIFICATION\n\n"
+                      f"📢 {title}\n\n"
+                      f"📅 {item.get('date', '')}\n\n"
+                      f"🔗 {url}"
+                  )
+
+
+                  subprocess.run(
+                      [
+                          "curl",
+                          "-sS",
+                          "-X",
+                          "POST",
+
+                          "-H",
+                          "Title: 🆕 New COE Notification",
+
+                          "-H",
+                          "Priority: 4",
+
+                          "-H",
+                          "Tags: graduation_cap,new",
+
+                          "-H",
+                          f"Click: {url}",
+
+                          f"https://ntfy.sh/{topic}",
+
+                          "-d",
+                          message
+                      ],
+                      check=True
+                  )
+
+
+              # ------------------------------------------------
+              # Send UPDATED notification alert
+              # ------------------------------------------------
+
+              for item in updated_notifications:
+
+                  title = (
+                      item.get("title")
+                      or
+                      "COE Notification Updated"
+                  )
+
+
+                  url = (
+                      item.get("url")
+                      or
+                      ""
+                  )
+
+
+                  message = (
+                      "🎓 Anna University COE\n\n"
+                      "🔄 NOTIFICATION UPDATED\n\n"
+                      f"📢 {title}\n\n"
+                      f"📅 {item.get('date', '')}\n\n"
+                      f"🔗 {url}"
+                  )
+
+
+                  subprocess.run(
+                      [
+                          "curl",
+                          "-sS",
+                          "-X",
+                          "POST",
+
+                          "-H",
+                          "Title: 🔄 COE Notification Updated",
+
+                          "-H",
+                          "Priority: 4",
+
+                          "-H",
+                          "Tags: graduation_cap,arrows_counterclockwise",
+
+                          "-H",
+                          f"Click: {url}",
+
+                          f"https://ntfy.sh/{topic}",
+
+                          "-d",
+                          message
+                      ],
+                      check=True
+                  )
+
+
+          else:
+
+              print(
+                  "NTFY_TOPIC is not configured."
               )
-
-              url = item.get("url")
-
-              message = (
-                  f"🎓 Anna University COE\n\n"
-                  f"🆕 NEW NOTIFICATION\n\n"
-                  f"📢 {title}\n\n"
-                  f"📄 Open PDF:\n"
-                  f"{url}"
-              )
-
-              subprocess.run([
-                  "curl",
-                  "-sS",
-                  "-X",
-                  "POST",
-                  "-H",
-                  "Title: 🆕 New COE Notification",
-                  "-H",
-                  "Priority: 4",
-                  "-H",
-                  "Tags: graduation_cap,new",
-                  "-H",
-                  f"Click: {url}",
-                  f"https://ntfy.sh/{os.environ['NTFY_TOPIC']}",
-                  "-d",
-                  message
-              ], check=True)
-
-          # Send UPDATED notifications
-          for item in updated_notifications:
-
-              title = (
-                  item.get("title")
-                  or "COE Notification Updated"
-              )
-
-              url = item.get("url")
-
-              message = (
-                  f"🎓 Anna University COE\n\n"
-                  f"🔄 NOTIFICATION UPDATED\n\n"
-                  f"📢 {title}\n\n"
-                  f"✏️ The notification information "
-                  f"has been updated.\n\n"
-                  f"📄 Open PDF:\n"
-                  f"{url}"
-              )
-
-              subprocess.run([
-                  "curl",
-                  "-sS",
-                  "-X",
-                  "POST",
-                  "-H",
-                  "Title: 🔄 COE Notification Updated",
-                  "-H",
-                  "Priority: 4",
-                  "-H",
-                  "Tags: graduation_cap,arrows_counterclockwise",
-                  "-H",
-                  f"Click: {url}",
-                  f"https://ntfy.sh/{os.environ['NTFY_TOPIC']}",
-                  "-d",
-                  message
-              ], check=True)
 
           PY
 
+
+      # ------------------------------------------------------
+      # Commit updated JSON
+      # ------------------------------------------------------
+
       - name: Commit updated notifications
+
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git config user.name \
+            "github-actions[bot]"
+
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
 
           git add data/notifications.json
 
-          git diff --cached --quiet || git commit -m "Update COE notifications"
 
-          git push
+          if git diff --cached --quiet; then
+
+            echo "No notification changes."
+
+          else
+
+            git commit \
+              -m "Update COE notifications"
+
+            git push
+
+          fi
