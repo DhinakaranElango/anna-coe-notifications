@@ -4,24 +4,24 @@ import time
 import urllib3
 
 from pathlib import Path
+from datetime import datetime
 from urllib.parse import urljoin
-from datetime import datetime, timezone
 
 import requests
 from bs4 import BeautifulSoup
 
 
 # ============================================================
-# CONFIGURATION
+# CONFIG
 # ============================================================
 
 ROOT = Path(__file__).resolve().parent
 
 OUTPUT = ROOT / "data" / "notifications.json"
 
-PRIMARY = "https://coe.annauniv.edu/home/index.php"
+COE_URL = "https://coe.annauniv.edu/home/index.php"
 
-FALLBACK = "https://aucoe.annauniv.edu/"
+FALLBACK_URL = "https://aucoe.annauniv.edu/"
 
 
 HEADERS = {
@@ -31,28 +31,19 @@ HEADERS = {
         "(KHTML, like Gecko) "
         "Chrome/140.0 Mobile Safari/537.36"
     ),
-
     "Accept": (
         "text/html,application/xhtml+xml,"
         "application/xml;q=0.9,*/*;q=0.8"
     ),
-
     "Accept-Language": "en-US,en;q=0.9",
-
     "Cache-Control": "no-cache",
-
     "Pragma": "no-cache",
 }
 
 
-# Anna University COE may use an older SSL certificate.
 urllib3.disable_warnings(
     urllib3.exceptions.InsecureRequestWarning
 )
-
-
-session = requests.Session()
-session.headers.update(HEADERS)
 
 
 # ============================================================
@@ -62,14 +53,14 @@ session.headers.update(HEADERS)
 # Example:
 # 19 Sep 2026 03:13 PM
 
-DATE_TIME_RE = re.compile(
+POSTED_DATE_TIME = re.compile(
     r"\b"
     r"\d{1,2}\s+"
     r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
     r"[a-z]*\s+\d{4}"
     r"\s+\d{1,2}:\d{2}\s*(?:AM|PM)"
     r"\b",
-    re.I,
+    re.I
 )
 
 
@@ -77,9 +68,8 @@ DATE_TIME_RE = re.compile(
 # 19-09-2026
 # 19/09/2026
 # 19 Sep 2026
-# 19 September 2026
 
-DATE_RE = re.compile(
+ANY_DATE = re.compile(
     r"\b(?:"
     r"\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}"
     r"|"
@@ -92,130 +82,81 @@ DATE_RE = re.compile(
     r"August|September|October|November|December)"
     r"\s+\d{4}"
     r")\b",
-    re.I,
-)
-
-
-# Words commonly appearing in COE notifications.
-KEYWORDS = re.compile(
-    r"(notification|circular|timetable|time table|exam|"
-    r"examination|result|hall.?ticket|revaluation|semester|"
-    r"schedule|registration|application|important|arrear|"
-    r"regulation|certificate|convocation|marksheet|academic|"
-    r"assessment|candidate|photograph|answer script|"
-    r"institutions)",
-    re.I,
+    re.I
 )
 
 
 # ============================================================
-# HELPER
+# HELPERS
 # ============================================================
 
 def clean(text):
-    """Remove unnecessary spaces and line breaks."""
-
     return " ".join(
         str(text or "").split()
     )
 
 
-# ============================================================
-# DATE PARSING
-# ============================================================
-
-def parse_datetime(value):
-    """
-    Convert notification dates into datetime objects
-    for correct newest-first sorting.
-    """
-
+def parse_date(value):
     value = clean(value)
 
     formats = [
         "%d %b %Y %I:%M %p",
         "%d %B %Y %I:%M %p",
-
         "%d %b %Y",
         "%d %B %Y",
-
         "%d-%m-%Y",
         "%d/%m/%Y",
         "%d.%m.%Y",
     ]
 
     for fmt in formats:
-
         try:
-
             return datetime.strptime(
                 value,
                 fmt
             )
-
         except ValueError:
-
             pass
 
     return datetime.min
 
 
-# ============================================================
-# GET NOTIFICATION POSTED DATE
-# ============================================================
-
-def posted_date_from_text(text):
+def get_posted_date(text):
     """
     IMPORTANT:
 
-    The COE notification can contain two dates.
-
-    Example:
-
-        19 Sep 2026 03:13 PM
-        ...
-        application extended up to 21-09-2026
-
-    We want:
+    If the notification contains:
 
         19 Sep 2026 03:13 PM
 
-    NOT:
+    and later:
 
         21-09-2026
+
+    the first value is used as the notification date.
     """
 
     text = clean(text)
 
-    # First priority:
-    # date + time
-    match = DATE_TIME_RE.search(
+    match = POSTED_DATE_TIME.search(
         text
     )
 
     if match:
+        return match.group(0)
 
-        return clean(
-            match.group(0)
-        )
-
-    # Fallback:
-    # ordinary date
-    match = DATE_RE.search(
+    match = ANY_DATE.search(
         text
     )
 
     if match:
-
-        return clean(
-            match.group(0)
-        )
+        return match.group(0)
 
     return ""
 
 
 # ============================================================
-# FETCH WEBSITE
+# FETCH
 # ============================================================
 
 def fetch(url):
@@ -225,17 +166,15 @@ def fetch(url):
         try:
 
             print(
-                f"Fetching {url} "
-                f"(attempt {attempt + 1}/3)"
+                f"Fetching: {url} "
+                f"[attempt {attempt + 1}/3]"
             )
 
-            response = session.get(
+            response = requests.get(
                 url,
-
+                headers=HEADERS,
                 timeout=45,
-
                 verify=False,
-
                 params={
                     "_": int(time.time())
                 }
@@ -244,86 +183,73 @@ def fetch(url):
             response.raise_for_status()
 
             if len(response.text) < 500:
-
                 raise RuntimeError(
-                    "COE response is too small"
+                    "Website returned very little content"
                 )
-
-            print(
-                "COE website fetched successfully."
-            )
 
             return response.text
 
         except Exception as error:
 
             print(
-                f"Fetch failed: {error}"
+                f"Fetch error: {error}"
             )
 
             if attempt < 2:
-
-                time.sleep(
-                    2 ** attempt
-                )
+                time.sleep(2)
 
     return None
 
 
 # ============================================================
-# FIND THE ACTUAL NOTIFICATION CONTAINER
+# GET NOTIFICATION CONTAINER
 # ============================================================
 
-def smallest_posted_container(anchor):
-    """
-    Starting from a notification link, find the smallest
-    surrounding HTML element that contains the posted
-    date/time.
+def get_container(link):
 
-    This is important because a notification may contain
-    another date such as an extension deadline.
+    """
+    Find the smallest surrounding element containing
+    the COE posting date/time.
+
+    This prevents a large page container from causing
+    the wrong date to be selected.
     """
 
     candidates = []
 
-    for tag in (
+    for tag in [
         "tr",
         "li",
         "td",
         "p",
         "div",
-        "article",
-        "section"
-    ):
+    ]:
 
-        parent = anchor.find_parent(
-            tag
+        parent = link.find_parent(tag)
+
+        if not parent:
+            continue
+
+        text = clean(
+            parent.get_text(
+                " ",
+                strip=True
+            )
         )
 
-        if parent:
+        if POSTED_DATE_TIME.search(text):
 
-            text = clean(
-                parent.get_text(
-                    " ",
-                    strip=True
+            candidates.append(
+                (
+                    len(text),
+                    parent
                 )
             )
-
-            if DATE_TIME_RE.search(
-                text
-            ):
-
-                candidates.append(
-                    (
-                        len(text),
-                        parent
-                    )
-                )
 
     if candidates:
 
         candidates.sort(
-            key=lambda item: item[0]
+            key=lambda x: x[0]
         )
 
         return candidates[0][1]
@@ -332,21 +258,18 @@ def smallest_posted_container(anchor):
 
 
 # ============================================================
-# CREATE TITLE
+# TITLE
 # ============================================================
 
-def notification_title(text):
+def make_title(text):
 
     text = clean(text)
 
-    # Remove posted date/time from beginning.
-    text = re.sub(
-        r"^\s*"
-        + DATE_TIME_RE.pattern
-        + r"\s*",
+    # Remove posting date/time at the beginning.
+    text = POSTED_DATE_TIME.sub(
         "",
         text,
-        flags=re.I
+        count=1
     )
 
     # Remove "Click Here".
@@ -357,73 +280,63 @@ def notification_title(text):
         flags=re.I
     )
 
-    text = clean(
-        text
-    )
+    text = clean(text)
 
     if not text:
+        text = "Anna University COE Notification"
 
-        text = (
-            "Anna University "
-            "COE Notification"
-        )
+    if len(text) > 300:
+        text = text[:297] + "..."
 
     return text
 
 
 # ============================================================
-# PARSE COE PAGE
+# PARSER
 # ============================================================
 
-def parse_page(
-    html,
-    source
-):
+def parse_page(html, source):
 
     soup = BeautifulSoup(
         html,
         "html.parser"
     )
 
-    # Remove unnecessary elements.
-    for tag in soup(
+    # Remove scripts/styles.
+    for tag in soup.find_all(
         [
             "script",
             "style",
             "noscript"
         ]
     ):
-
         tag.decompose()
 
-    items = []
+    notifications = []
 
     seen = set()
 
 
-    # ========================================================
-    # METHOD 1
-    # Find notification links
-    # ========================================================
+    # --------------------------------------------------------
+    # COE notification links
+    # --------------------------------------------------------
 
-    for anchor in soup.find_all(
+    for link in soup.find_all(
         "a",
         href=True
     ):
 
         href = clean(
-            anchor.get(
+            link.get(
                 "href",
                 ""
             )
         )
 
         if not href:
-
             continue
 
         if href.startswith("#"):
-
             continue
 
         if href.lower().startswith(
@@ -433,7 +346,6 @@ def parse_page(
                 "tel:"
             )
         ):
-
             continue
 
 
@@ -444,24 +356,21 @@ def parse_page(
 
 
         link_text = clean(
-            anchor.get_text(
+            link.get_text(
                 " ",
                 strip=True
             )
         )
 
 
-        # Find the notification box.
-        container = (
-            smallest_posted_container(
-                anchor
-            )
+        container = get_container(
+            link
         )
 
 
         if container:
 
-            context = clean(
+            text = clean(
                 container.get_text(
                     " ",
                     strip=True
@@ -470,16 +379,16 @@ def parse_page(
 
         else:
 
+            # Try the closest common notification container.
             parent = (
-                anchor.find_parent("tr")
-                or anchor.find_parent("li")
-                or anchor.find_parent("p")
-                or anchor.find_parent("div")
+                link.find_parent("tr")
+                or link.find_parent("li")
+                or link.find_parent("p")
             )
 
             if parent:
 
-                context = clean(
+                text = clean(
                     parent.get_text(
                         " ",
                         strip=True
@@ -488,10 +397,11 @@ def parse_page(
 
             else:
 
-                context = link_text
+                text = link_text
 
 
-        # Check whether this is likely a COE notification.
+        # We only want links that look like
+        # actual notifications/documents.
         is_document = bool(
             re.search(
                 r"\.(pdf|doc|docx|xls|xlsx)"
@@ -502,7 +412,7 @@ def parse_page(
         )
 
 
-        is_click_link = (
+        is_click_here = (
             link_text.lower()
             in {
                 "click here",
@@ -515,289 +425,124 @@ def parse_page(
 
         if not (
             is_document
-            or is_click_link
-            or KEYWORDS.search(context)
+            or is_click_here
         ):
-
             continue
 
 
         # ----------------------------------------------------
-        # DATE
+        # POSTED DATE
         # ----------------------------------------------------
 
-        date = posted_date_from_text(
-            context
+        date = get_posted_date(
+            text
         )
 
 
         if not date:
-
             continue
 
 
         # ----------------------------------------------------
-        # REMOVE DUPLICATE URL
+        # DUPLICATE
         # ----------------------------------------------------
 
         if url in seen:
-
             continue
 
-        seen.add(
-            url
-        )
+        seen.add(url)
 
 
         # ----------------------------------------------------
         # TITLE
         # ----------------------------------------------------
 
-        title = notification_title(
-            context
+        title = make_title(
+            text
         )
-
-
-        if len(title) > 300:
-
-            title = (
-                title[:297]
-                + "..."
-            )
 
 
         # ----------------------------------------------------
         # DESCRIPTION
         # ----------------------------------------------------
 
-        description = context
+        description = text
 
         if len(description) > 800:
-
             description = (
                 description[:797]
                 + "..."
             )
 
 
-        # ----------------------------------------------------
-        # SAVE
-        # ----------------------------------------------------
-
-        items.append(
+        notifications.append(
             {
                 "title": title,
-
                 "url": url,
-
                 "date": date,
-
                 "description": description,
-
                 "source": source
             }
         )
 
 
-    # ========================================================
-    # METHOD 2
-    # Fallback PDF/document search
-    # ========================================================
-
-    if not items:
-
-        for anchor in soup.find_all(
-            "a",
-            href=True
-        ):
-
-            href = clean(
-                anchor.get(
-                    "href",
-                    ""
-                )
-            )
-
-            if not href:
-
-                continue
-
-
-            url = urljoin(
-                source,
-                href
-            )
-
-
-            if not re.search(
-                r"\.(pdf|doc|docx|xls|xlsx)"
-                r"(?:[?#].*)?$",
-                url,
-                re.I
-            ):
-
-                continue
-
-
-            parent = (
-                anchor.find_parent("tr")
-                or anchor.find_parent("li")
-                or anchor.find_parent("p")
-                or anchor.find_parent("div")
-            )
-
-
-            if parent:
-
-                context = clean(
-                    parent.get_text(
-                        " ",
-                        strip=True
-                    )
-                )
-
-            else:
-
-                context = clean(
-                    anchor.get_text(
-                        " ",
-                        strip=True
-                    )
-                )
-
-
-            if not KEYWORDS.search(
-                context
-            ):
-
-                continue
-
-
-            date = posted_date_from_text(
-                context
-            )
-
-
-            if not date:
-
-                continue
-
-
-            if url in seen:
-
-                continue
-
-
-            seen.add(
-                url
-            )
-
-
-            title = notification_title(
-                context
-            )
-
-
-            if len(title) > 300:
-
-                title = (
-                    title[:297]
-                    + "..."
-                )
-
-
-            items.append(
-                {
-                    "title": title,
-
-                    "url": url,
-
-                    "date": date,
-
-                    "description":
-                        context[:800],
-
-                    "source": source
-                }
-            )
-
-
-    return items
+    return notifications
 
 
 # ============================================================
-# LOAD EXISTING JSON
+# LOAD OLD DATA
 # ============================================================
 
-def load_old():
+def load_existing():
 
     if not OUTPUT.exists():
-
         return []
 
     try:
 
-        data = json.loads(
-            OUTPUT.read_text(
-                encoding="utf-8"
-            )
-        )
+        with open(
+            OUTPUT,
+            "r",
+            encoding="utf-8"
+        ) as file:
 
-        if isinstance(
-            data,
-            list
-        ):
+            data = json.load(file)
 
+        if isinstance(data, list):
             return data
 
     except Exception as error:
 
         print(
-            "Could not read existing JSON:",
-            error
+            f"Could not load old data: {error}"
         )
 
     return []
 
 
 # ============================================================
-# REMOVE DUPLICATES
+# SAVE
 # ============================================================
 
-def deduplicate(items):
+def save(items):
 
-    unique = {}
-
-    for item in items:
-
-        url = clean(
-            item.get(
-                "url",
-                ""
-            )
-        )
-
-        if url:
-
-            unique[url] = item
-
-    return list(
-        unique.values()
+    OUTPUT.parent.mkdir(
+        parents=True,
+        exist_ok=True
     )
 
+    with open(
+        OUTPUT,
+        "w",
+        encoding="utf-8"
+    ) as file:
 
-# ============================================================
-# SORT NEWEST FIRST
-# ============================================================
-
-def sort_key(item):
-
-    return parse_datetime(
-        item.get(
-            "date",
-            ""
+        json.dump(
+            items,
+            file,
+            ensure_ascii=False,
+            indent=2
         )
-    )
 
 
 # ============================================================
@@ -806,44 +551,43 @@ def sort_key(item):
 
 def main():
 
-    old_items = load_old()
-
+    old_items = load_existing()
 
     print()
     print("=" * 60)
-    print("ANNA UNIVERSITY COE CHECK")
+    print("ANNA UNIVERSITY COE NOTIFICATION CHECK")
     print("=" * 60)
 
 
     # --------------------------------------------------------
-    # Primary COE website
+    # Try primary
     # --------------------------------------------------------
 
     html = fetch(
-        PRIMARY
+        COE_URL
     )
 
-    source = PRIMARY
+    source = COE_URL
 
     items = []
+
 
     if html:
 
         items = parse_page(
             html,
-            PRIMARY
+            COE_URL
         )
 
 
     # --------------------------------------------------------
-    # Fallback website
+    # Try fallback
     # --------------------------------------------------------
 
     if not items:
 
         print(
-            "Primary source returned "
-            "no notifications."
+            "Primary parser returned no notifications."
         )
 
         print(
@@ -851,108 +595,96 @@ def main():
         )
 
 
-        fallback_html = fetch(
-            FALLBACK
+        html = fetch(
+            FALLBACK_URL
         )
 
 
-        if fallback_html:
+        if html:
 
-            fallback_items = parse_page(
-                fallback_html,
-                FALLBACK
+            items = parse_page(
+                html,
+                FALLBACK_URL
             )
 
-
-            if fallback_items:
-
-                items = fallback_items
-
-                source = FALLBACK
+            if items:
+                source = FALLBACK_URL
 
 
     # --------------------------------------------------------
-    # SAFETY
-    # --------------------------------------------------------
-    #
-    # NEVER erase the existing JSON if the COE website
-    # temporarily fails.
+    # NEVER erase good data
     # --------------------------------------------------------
 
     if not items:
 
         print(
-            "No notifications detected."
+            "No notifications found."
         )
 
         print(
-            f"Keeping existing "
-            f"{len(old_items)} notifications."
+            "Keeping existing database."
         )
 
         return
 
 
     # --------------------------------------------------------
-    # Clean and sort
+    # Remove duplicates
     # --------------------------------------------------------
 
-    items = deduplicate(
-        items
+    unique = {}
+
+    for item in items:
+
+        url = item.get(
+            "url",
+            ""
+        )
+
+        if url:
+            unique[url] = item
+
+
+    items = list(
+        unique.values()
     )
 
 
+    # --------------------------------------------------------
+    # Newest first
+    # --------------------------------------------------------
+
     items.sort(
-        key=sort_key,
+        key=lambda item:
+            parse_date(
+                item.get(
+                    "date",
+                    ""
+                )
+            ),
         reverse=True
     )
 
 
-    # Keep latest 200.
+    # --------------------------------------------------------
+    # Keep latest 200
+    # --------------------------------------------------------
+
     items = items[:200]
 
 
     # --------------------------------------------------------
-    # Save JSON
-    # --------------------------------------------------------
-
-    OUTPUT.parent.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-
-    OUTPUT.write_text(
-        json.dumps(
-            items,
-            ensure_ascii=False,
-            indent=2
-        ),
-        encoding="utf-8"
-    )
-
-
-    # --------------------------------------------------------
-    # Find genuinely new notifications
+    # Detect genuinely new items
     # --------------------------------------------------------
 
     old_urls = {
 
-        clean(
-            item.get(
-                "url",
-                ""
-            )
+        item.get(
+            "url",
+            ""
         )
 
         for item in old_items
-
-        if clean(
-            item.get(
-                "url",
-                ""
-            )
-        )
     }
 
 
@@ -962,18 +694,25 @@ def main():
 
         for item in items
 
-        if clean(
-            item.get(
-                "url",
-                ""
-            )
+        if item.get(
+            "url",
+            ""
         )
         not in old_urls
     ]
 
 
     # --------------------------------------------------------
-    # Result
+    # Save
+    # --------------------------------------------------------
+
+    save(
+        items
+    )
+
+
+    # --------------------------------------------------------
+    # RESULT
     # --------------------------------------------------------
 
     print()
@@ -982,34 +721,27 @@ def main():
     )
 
     print(
-        f"Notifications found: "
-        f"{len(items)}"
+        f"Notifications found: {len(items)}"
     )
 
     print(
-        f"New notifications: "
-        f"{len(new_items)}"
-    )
-
-    print(
-        "Checked at:",
-        datetime.now(
-            timezone.utc
-        ).isoformat()
+        f"New notifications: {len(new_items)}"
     )
 
     print("=" * 60)
 
 
-    for item in new_items[:20]:
+    for item in new_items[:10]:
 
         print(
             "NEW:",
             item.get(
                 "date",
                 ""
-            ),
-            "|",
+            )
+        )
+
+        print(
             item.get(
                 "title",
                 ""
@@ -1017,21 +749,14 @@ def main():
         )
 
         print(
-            "URL:",
             item.get(
                 "url",
                 ""
             )
         )
 
+        print("-" * 60)
 
-    print("=" * 60)
-
-
-# ============================================================
-# START
-# ============================================================
 
 if __name__ == "__main__":
-
     main()
