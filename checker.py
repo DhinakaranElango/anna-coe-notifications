@@ -83,15 +83,60 @@ def clean(text):
     return " ".join(text.split())
 
 
-def extract_date(text):
+def extract_posted_date(element):
     """
-    Extract dates including:
-    19 Sep 2026
-    19 September 2026
-    19-09-2026
-    19/09/2026
-    19.09.2026
+    Extract the COE notification POSTED date.
+
+    Important:
+    Dates inside the notification message (for example,
+    an extended deadline such as 21-09-2026) must NOT
+    become the notification date.
     """
+
+    # First look for a date/time in the nearest notification
+    # container, before falling back to surrounding text.
+
+    parents = []
+
+    for tag in ["tr", "li", "td", "p", "div"]:
+        parent = element.find_parent(tag)
+
+        if parent:
+            parents.append(parent)
+
+    patterns = [
+        r"\b\d{1,2}\s+"
+        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+        r"[a-z]*\s+\d{4}"
+        r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?",
+
+        r"\b\d{1,2}\s+"
+        r"(?:January|February|March|April|May|June|July|"
+        r"August|September|October|November|December)"
+        r"\s+\d{4}"
+        r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?",
+    ]
+
+    # Prefer the smallest parent that contains a posted date.
+    for parent in parents:
+        text = clean(
+            parent.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+        for pattern in patterns:
+            match = re.search(
+                pattern,
+                text,
+                re.I
+            )
+
+            if match:
+                return match.group(0)
+
+    return ""
 
     patterns = [
         r"\b\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4}\b",
@@ -276,7 +321,7 @@ def parse_page(html, source):
         ):
             continue
 
-        date = extract_date(context)
+        date = extract_posted_date(a)
 
         # Use surrounding text as title when
         # the link itself is only "Click Here".
