@@ -45,201 +45,177 @@ HEADERS = {
 }
 
 
-# Suppress the SSL warning produced because the
-# COE website may use an older certificate.
-
+# Anna University COE may use an older SSL certificate.
 urllib3.disable_warnings(
     urllib3.exceptions.InsecureRequestWarning
 )
 
 
-KEYWORDS = re.compile(
-    r"(notification|circular|timetable|time table|exam|"
-    r"result|hall.?ticket|revaluation|semester|schedule|"
-    r"fee|registration|application|important|examination|"
-    r"arrear|regulation|certificate|convocation|marksheet|"
-    r"academic|assessment|candidate|photograph|"
-    r"answer scripts|answer script|institutions)",
-    re.I,
-)
-
-
 session = requests.Session()
-
 session.headers.update(HEADERS)
 
 
 # ============================================================
-# BASIC HELPERS
+# DATE PATTERNS
+# ============================================================
+
+# Example:
+# 19 Sep 2026 03:13 PM
+
+DATE_TIME_RE = re.compile(
+    r"\b"
+    r"\d{1,2}\s+"
+    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+    r"[a-z]*\s+\d{4}"
+    r"\s+\d{1,2}:\d{2}\s*(?:AM|PM)"
+    r"\b",
+    re.I,
+)
+
+
+# Examples:
+# 19-09-2026
+# 19/09/2026
+# 19 Sep 2026
+# 19 September 2026
+
+DATE_RE = re.compile(
+    r"\b(?:"
+    r"\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}"
+    r"|"
+    r"\d{1,2}\s+"
+    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+    r"[a-z]*\s+\d{4}"
+    r"|"
+    r"\d{1,2}\s+"
+    r"(?:January|February|March|April|May|June|July|"
+    r"August|September|October|November|December)"
+    r"\s+\d{4}"
+    r")\b",
+    re.I,
+)
+
+
+# Words commonly appearing in COE notifications.
+KEYWORDS = re.compile(
+    r"(notification|circular|timetable|time table|exam|"
+    r"examination|result|hall.?ticket|revaluation|semester|"
+    r"schedule|registration|application|important|arrear|"
+    r"regulation|certificate|convocation|marksheet|academic|"
+    r"assessment|candidate|photograph|answer script|"
+    r"institutions)",
+    re.I,
+)
+
+
+# ============================================================
+# HELPER
 # ============================================================
 
 def clean(text):
-    """Remove extra whitespace."""
+    """Remove unnecessary spaces and line breaks."""
 
     return " ".join(
-        text.split()
+        str(text or "").split()
     )
 
 
 # ============================================================
-# DATE EXTRACTION
+# DATE PARSING
 # ============================================================
 
-def extract_posted_datetime(text):
+def parse_datetime(value):
     """
-    Extract the COE POSTED date/time.
+    Convert notification dates into datetime objects
+    for correct newest-first sorting.
+    """
+
+    value = clean(value)
+
+    formats = [
+        "%d %b %Y %I:%M %p",
+        "%d %B %Y %I:%M %p",
+
+        "%d %b %Y",
+        "%d %B %Y",
+
+        "%d-%m-%Y",
+        "%d/%m/%Y",
+        "%d.%m.%Y",
+    ]
+
+    for fmt in formats:
+
+        try:
+
+            return datetime.strptime(
+                value,
+                fmt
+            )
+
+        except ValueError:
+
+            pass
+
+    return datetime.min
+
+
+# ============================================================
+# GET NOTIFICATION POSTED DATE
+# ============================================================
+
+def posted_date_from_text(text):
+    """
+    IMPORTANT:
+
+    The COE notification can contain two dates.
 
     Example:
 
         19 Sep 2026 03:13 PM
+        ...
+        application extended up to 21-09-2026
 
-    returns:
-
-        19 Sep 2026 03:13 PM
-
-    This function deliberately prefers a date followed
-    by a time because the notification text may contain
-    another date such as an extension deadline:
-
-        21-09-2026
-
-    We do NOT want that deadline to become the notification
-    date.
-    """
-
-    if not text:
-        return ""
-
-    patterns = [
-
-        # Example:
-        # 19 Sep 2026 03:13 PM
-
-        r"\b"
-        r"\d{1,2}\s+"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{4}"
-        r"\s+\d{1,2}:\d{2}\s*(?:AM|PM)"
-        r"\b",
-
-        # Example:
-        # 19 September 2026 03:13 PM
-
-        r"\b"
-        r"\d{1,2}\s+"
-        r"(?:January|February|March|April|May|June|July|"
-        r"August|September|October|November|December)"
-        r"\s+\d{4}"
-        r"\s+\d{1,2}:\d{2}\s*(?:AM|PM)"
-        r"\b",
-    ]
-
-    for pattern in patterns:
-
-        match = re.search(
-            pattern,
-            text,
-            re.I
-        )
-
-        if match:
-
-            return clean(
-                match.group(0)
-            )
-
-    return ""
-
-
-def extract_date_only(text):
-    """
-    Fallback date extraction.
-
-    Used only when a date/time is not available.
-    """
-
-    if not text:
-        return ""
-
-    patterns = [
-
-        # 19-09-2026
-        r"\b\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4}\b",
-
-        # 19 Sep 2026
-        r"\b\d{1,2}\s+"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{4}\b",
-
-        # 19 September 2026
-        r"\b\d{1,2}\s+"
-        r"(?:January|February|March|April|May|June|July|"
-        r"August|September|October|November|December)"
-        r"\s+\d{4}\b",
-
-        # Sep 19 2026
-        r"\b"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{1,2},?\s+\d{4}\b",
-    ]
-
-    for pattern in patterns:
-
-        match = re.search(
-            pattern,
-            text,
-            re.I
-        )
-
-        if match:
-
-            return match.group(0)
-
-    return ""
-
-
-def extract_date(text):
-    """
-    Compatibility function.
-
-    IMPORTANT:
-    If the COE page contains:
+    We want:
 
         19 Sep 2026 03:13 PM
 
-    and later:
+    NOT:
 
         21-09-2026
-
-    the first value is preferred because it is the
-    actual notification posting date/time.
     """
 
-    posted = extract_posted_datetime(
+    text = clean(text)
+
+    # First priority:
+    # date + time
+    match = DATE_TIME_RE.search(
         text
     )
 
-    if posted:
+    if match:
 
-        # Return only the date portion.
-        match = re.search(
-            r"\d{1,2}\s+"
-            r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-            r"[a-z]*\s+\d{4}",
-            posted,
-            re.I
+        return clean(
+            match.group(0)
         )
 
-        if match:
-            return match.group(0)
-
-    return extract_date_only(
+    # Fallback:
+    # ordinary date
+    match = DATE_RE.search(
         text
     )
+
+    if match:
+
+        return clean(
+            match.group(0)
+        )
+
+    return ""
 
 
 # ============================================================
-# FETCH COE WEBSITE
+# FETCH WEBSITE
 # ============================================================
 
 def fetch(url):
@@ -249,20 +225,20 @@ def fetch(url):
         try:
 
             print(
-                f"Trying {url} "
+                f"Fetching {url} "
                 f"(attempt {attempt + 1}/3)"
             )
 
-            # Cache-busting query parameter
-            params = {
-                "_": int(time.time())
-            }
-
             response = session.get(
                 url,
+
                 timeout=45,
+
                 verify=False,
-                params=params
+
+                params={
+                    "_": int(time.time())
+                }
             )
 
             response.raise_for_status()
@@ -270,11 +246,11 @@ def fetch(url):
             if len(response.text) < 500:
 
                 raise RuntimeError(
-                    "Page response is unusually small"
+                    "COE response is too small"
                 )
 
             print(
-                f"Successfully fetched {url}"
+                "COE website fetched successfully."
             )
 
             return response.text
@@ -295,76 +271,104 @@ def fetch(url):
 
 
 # ============================================================
-# FIND NOTIFICATION BLOCKS
+# FIND THE ACTUAL NOTIFICATION CONTAINER
 # ============================================================
 
-def find_notification_blocks(soup):
+def smallest_posted_container(anchor):
+    """
+    Starting from a notification link, find the smallest
+    surrounding HTML element that contains the posted
+    date/time.
 
-    blocks = []
+    This is important because a notification may contain
+    another date such as an extension deadline.
+    """
 
-    selectors = [
+    candidates = []
+
+    for tag in (
         "tr",
         "li",
-        ".message",
-        ".messages",
-        ".notice",
-        ".notification",
-        ".panel",
+        "td",
         "p",
         "div",
-    ]
+        "article",
+        "section"
+    ):
 
-    seen = set()
+        parent = anchor.find_parent(
+            tag
+        )
 
-    for selector in selectors:
-
-        for element in soup.select(
-            selector
-        ):
+        if parent:
 
             text = clean(
-                element.get_text(
+                parent.get_text(
                     " ",
                     strip=True
                 )
             )
 
-            if not text:
-                continue
+            if DATE_TIME_RE.search(
+                text
+            ):
 
-            has_date = bool(
-                re.search(
-                    r"\b\d{1,2}\s+"
-                    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-                    r"[a-z]*\s+\d{4}\b",
-                    text,
-                    re.I
+                candidates.append(
+                    (
+                        len(text),
+                        parent
+                    )
                 )
-            )
 
-            has_keyword = bool(
-                KEYWORDS.search(text)
-            )
+    if candidates:
 
-            if not has_date and not has_keyword:
-                continue
+        candidates.sort(
+            key=lambda item: item[0]
+        )
 
-            # Ignore huge page-level containers.
-            if len(text) > 1500:
-                continue
+        return candidates[0][1]
 
-            key = text[:1000]
+    return None
 
-            if key in seen:
-                continue
 
-            seen.add(key)
+# ============================================================
+# CREATE TITLE
+# ============================================================
 
-            blocks.append(
-                element
-            )
+def notification_title(text):
 
-    return blocks
+    text = clean(text)
+
+    # Remove posted date/time from beginning.
+    text = re.sub(
+        r"^\s*"
+        + DATE_TIME_RE.pattern
+        + r"\s*",
+        "",
+        text,
+        flags=re.I
+    )
+
+    # Remove "Click Here".
+    text = re.sub(
+        r"\s*click\s*here\s*$",
+        "",
+        text,
+        flags=re.I
+    )
+
+    text = clean(
+        text
+    )
+
+    if not text:
+
+        text = (
+            "Anna University "
+            "COE Notification"
+        )
+
+    return text
 
 
 # ============================================================
@@ -381,246 +385,45 @@ def parse_page(
         "html.parser"
     )
 
-    # Remove scripts/styles.
+    # Remove unnecessary elements.
     for tag in soup(
-        ["script", "style", "noscript"]
+        [
+            "script",
+            "style",
+            "noscript"
+        ]
     ):
 
         tag.decompose()
 
     items = []
 
-    seen_urls = set()
+    seen = set()
 
-    # --------------------------------------------------------
+
+    # ========================================================
     # METHOD 1
-    # Notification blocks
-    # --------------------------------------------------------
+    # Find notification links
+    # ========================================================
 
-    blocks = find_notification_blocks(
-        soup
-    )
-
-    for block in blocks:
-
-        block_text = clean(
-            block.get_text(
-                " ",
-                strip=True
-            )
-        )
-
-        # ----------------------------------------------------
-        # IMPORTANT DATE LOGIC
-        # ----------------------------------------------------
-        #
-        # Prefer the date + time.
-        #
-        # Example:
-        #
-        # 19 Sep 2026 03:13 PM
-        #
-        # instead of:
-        #
-        # 21-09-2026
-        #
-        # mentioned later in the message.
-        # ----------------------------------------------------
-
-        posted_datetime = (
-            extract_posted_datetime(
-                block_text
-            )
-        )
-
-        posted_date = (
-            extract_date(
-                block_text
-            )
-        )
-
-        links = block.find_all(
-            "a",
-            href=True
-        )
-
-        for link in links:
-
-            href = link.get(
-                "href",
-                ""
-            ).strip()
-
-            link_text = clean(
-                link.get_text(
-                    " ",
-                    strip=True
-                )
-            )
-
-            if not href:
-                continue
-
-            if href.startswith("#"):
-                continue
-
-            if href.lower().startswith(
-                (
-                    "javascript:",
-                    "mailto:",
-                    "tel:"
-                )
-            ):
-                continue
-
-            url = urljoin(
-                source,
-                href
-            )
-
-            lower_url = url.lower()
-
-            is_document = bool(
-                re.search(
-                    r"\.(pdf|doc|docx|xls|xlsx)"
-                    r"(?:[?#].*)?$",
-                    lower_url,
-                    re.I
-                )
-            )
-
-            is_click_link = (
-                link_text.lower()
-                in {
-                    "click here",
-                    "clickhere",
-                    "here",
-                    "read more"
-                }
-            )
-
-            if (
-                not is_document
-                and not is_click_link
-            ):
-                continue
-
-            if url in seen_urls:
-                continue
-
-            seen_urls.add(url)
-
-            # ------------------------------------------------
-            # TITLE
-            # ------------------------------------------------
-
-            title = block_text
-
-            # Remove the POSTED date/time from beginning.
-            title = re.sub(
-                r"^\s*\d{1,2}\s+"
-                r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-                r"[a-z]*\s+\d{4}"
-                r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?"
-                r"\s*",
-                "",
-                title,
-                flags=re.I
-            )
-
-            # Remove Click Here at the end.
-            title = re.sub(
-                r"\s*click\s*here\s*$",
-                "",
-                title,
-                flags=re.I
-            )
-
-            title = clean(
-                title
-            )
-
-            if not title:
-
-                title = (
-                    "Anna University "
-                    "COE Notification"
-                )
-
-            if len(title) > 300:
-
-                title = (
-                    title[:297]
-                    + "..."
-                )
-
-            # ------------------------------------------------
-            # DESCRIPTION
-            # ------------------------------------------------
-
-            description = block_text
-
-            if len(description) > 800:
-
-                description = (
-                    description[:797]
-                    + "..."
-                )
-
-            # ------------------------------------------------
-            # DATE TO SAVE
-            # ------------------------------------------------
-
-            if posted_datetime:
-
-                saved_date = (
-                    posted_datetime
-                )
-
-            elif posted_date:
-
-                saved_date = (
-                    posted_date
-                )
-
-            else:
-
-                saved_date = ""
-
-            items.append(
-                {
-                    "title": title,
-
-                    "url": url,
-
-                    "date": saved_date,
-
-                    "description":
-                        description,
-
-                    "source": source
-                }
-            )
-
-    # --------------------------------------------------------
-    # METHOD 2
-    # Generic PDF/document links
-    # --------------------------------------------------------
-
-    for link in soup.find_all(
+    for anchor in soup.find_all(
         "a",
         href=True
     ):
 
-        href = link.get(
-            "href",
-            ""
-        ).strip()
+        href = clean(
+            anchor.get(
+                "href",
+                ""
+            )
+        )
 
         if not href:
+
             continue
 
         if href.startswith("#"):
+
             continue
 
         if href.lower().startswith(
@@ -630,16 +433,65 @@ def parse_page(
                 "tel:"
             )
         ):
+
             continue
+
 
         url = urljoin(
             source,
             href
         )
 
-        if url in seen_urls:
-            continue
 
+        link_text = clean(
+            anchor.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+
+        # Find the notification box.
+        container = (
+            smallest_posted_container(
+                anchor
+            )
+        )
+
+
+        if container:
+
+            context = clean(
+                container.get_text(
+                    " ",
+                    strip=True
+                )
+            )
+
+        else:
+
+            parent = (
+                anchor.find_parent("tr")
+                or anchor.find_parent("li")
+                or anchor.find_parent("p")
+                or anchor.find_parent("div")
+            )
+
+            if parent:
+
+                context = clean(
+                    parent.get_text(
+                        " ",
+                        strip=True
+                    )
+                )
+
+            else:
+
+                context = link_text
+
+
+        # Check whether this is likely a COE notification.
         is_document = bool(
             re.search(
                 r"\.(pdf|doc|docx|xls|xlsx)"
@@ -649,66 +501,62 @@ def parse_page(
             )
         )
 
-        if not is_document:
-            continue
 
-        link_text = clean(
-            link.get_text(
-                " ",
-                strip=True
-            )
+        is_click_link = (
+            link_text.lower()
+            in {
+                "click here",
+                "clickhere",
+                "here",
+                "read more"
+            }
         )
 
-        parent = (
-            link.find_parent("tr")
-            or link.find_parent("li")
-            or link.find_parent("p")
-            or link.find_parent("div")
-        )
 
-        context = ""
-
-        if parent:
-
-            context = clean(
-                parent.get_text(
-                    " ",
-                    strip=True
-                )
-            )
-
-        searchable = clean(
-            f"{link_text} "
-            f"{context} "
-            f"{url}"
-        )
-
-        if not KEYWORDS.search(
-            searchable
+        if not (
+            is_document
+            or is_click_link
+            or KEYWORDS.search(context)
         ):
+
             continue
 
-        seen_urls.add(
+
+        # ----------------------------------------------------
+        # DATE
+        # ----------------------------------------------------
+
+        date = posted_date_from_text(
+            context
+        )
+
+
+        if not date:
+
+            continue
+
+
+        # ----------------------------------------------------
+        # REMOVE DUPLICATE URL
+        # ----------------------------------------------------
+
+        if url in seen:
+
+            continue
+
+        seen.add(
             url
         )
 
-        posted_datetime = (
-            extract_posted_datetime(
-                context
-            )
-        )
 
-        posted_date = (
-            extract_date(
-                context
-            )
-        )
+        # ----------------------------------------------------
+        # TITLE
+        # ----------------------------------------------------
 
-        title = (
+        title = notification_title(
             context
-            or link_text
-            or "Anna University COE Notification"
         )
+
 
         if len(title) > 300:
 
@@ -717,17 +565,24 @@ def parse_page(
                 + "..."
             )
 
-        if posted_datetime:
 
-            saved_date = (
-                posted_datetime
+        # ----------------------------------------------------
+        # DESCRIPTION
+        # ----------------------------------------------------
+
+        description = context
+
+        if len(description) > 800:
+
+            description = (
+                description[:797]
+                + "..."
             )
 
-        else:
 
-            saved_date = (
-                posted_date
-            )
+        # ----------------------------------------------------
+        # SAVE
+        # ----------------------------------------------------
 
         items.append(
             {
@@ -735,20 +590,143 @@ def parse_page(
 
                 "url": url,
 
-                "date": saved_date,
+                "date": date,
 
-                "description":
-                    context[:800],
+                "description": description,
 
                 "source": source
             }
         )
 
+
+    # ========================================================
+    # METHOD 2
+    # Fallback PDF/document search
+    # ========================================================
+
+    if not items:
+
+        for anchor in soup.find_all(
+            "a",
+            href=True
+        ):
+
+            href = clean(
+                anchor.get(
+                    "href",
+                    ""
+                )
+            )
+
+            if not href:
+
+                continue
+
+
+            url = urljoin(
+                source,
+                href
+            )
+
+
+            if not re.search(
+                r"\.(pdf|doc|docx|xls|xlsx)"
+                r"(?:[?#].*)?$",
+                url,
+                re.I
+            ):
+
+                continue
+
+
+            parent = (
+                anchor.find_parent("tr")
+                or anchor.find_parent("li")
+                or anchor.find_parent("p")
+                or anchor.find_parent("div")
+            )
+
+
+            if parent:
+
+                context = clean(
+                    parent.get_text(
+                        " ",
+                        strip=True
+                    )
+                )
+
+            else:
+
+                context = clean(
+                    anchor.get_text(
+                        " ",
+                        strip=True
+                    )
+                )
+
+
+            if not KEYWORDS.search(
+                context
+            ):
+
+                continue
+
+
+            date = posted_date_from_text(
+                context
+            )
+
+
+            if not date:
+
+                continue
+
+
+            if url in seen:
+
+                continue
+
+
+            seen.add(
+                url
+            )
+
+
+            title = notification_title(
+                context
+            )
+
+
+            if len(title) > 300:
+
+                title = (
+                    title[:297]
+                    + "..."
+                )
+
+
+            items.append(
+                {
+                    "title": title,
+
+                    "url": url,
+
+                    "date": date,
+
+                    "description":
+                        context[:800],
+
+                    "source": source
+                }
+            )
+
+
     return items
 
 
 # ============================================================
-# LOAD OLD DATA
+# LOAD EXISTING JSON
 # ============================================================
 
 def load_old():
@@ -775,277 +753,285 @@ def load_old():
     except Exception as error:
 
         print(
-            "Could not read old "
-            f"notifications: {error}"
+            "Could not read existing JSON:",
+            error
         )
 
     return []
 
 
 # ============================================================
-# DATE SORTING
-# ============================================================
-
-def date_sort_key(item):
-
-    date_text = item.get(
-        "date",
-        ""
-    )
-
-    formats = [
-
-        "%d %b %Y %I:%M %p",
-
-        "%d %b %Y",
-
-        "%d %B %Y %I:%M %p",
-
-        "%d %B %Y",
-
-        "%d-%m-%Y",
-
-        "%d/%m/%Y",
-
-        "%d.%m.%Y",
-    ]
-
-    for fmt in formats:
-
-        try:
-
-            return datetime.strptime(
-                date_text,
-                fmt
-            )
-
-        except ValueError:
-
-            pass
-
-    # Search inside larger text.
-
-    match = re.search(
-        r"(\d{1,2}\s+"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{4}"
-        r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?)",
-        date_text,
-        re.I
-    )
-
-    if match:
-
-        value = clean(
-            match.group(1)
-        )
-
-        for fmt in formats:
-
-            try:
-
-                return datetime.strptime(
-                    value,
-                    fmt
-                )
-
-            except ValueError:
-
-                pass
-
-    return datetime.min
-
-
-# ============================================================
-# MAIN
-# ============================================================
-
-old_items = load_old()
-
-
-print(
-    "=" * 60
-)
-
-print(
-    "ANNA UNIVERSITY COE CHECK"
-)
-
-print(
-    "=" * 60
-)
-
-
-html = fetch(
-    PRIMARY
-)
-
-
-used_source = PRIMARY
-
-items = []
-
-
-# ------------------------------------------------------------
-# Primary website
-# ------------------------------------------------------------
-
-if html:
-
-    items = parse_page(
-        html,
-        PRIMARY
-    )
-
-
-# ------------------------------------------------------------
-# Fallback website
-# ------------------------------------------------------------
-
-if not items:
-
-    print(
-        "Primary COE page produced "
-        "no notifications."
-    )
-
-    print(
-        "Trying official fallback..."
-    )
-
-    fallback_html = fetch(
-        FALLBACK
-    )
-
-    if fallback_html:
-
-        fallback_items = parse_page(
-            fallback_html,
-            FALLBACK
-        )
-
-        if fallback_items:
-
-            items = fallback_items
-
-            used_source = FALLBACK
-
-
-# ============================================================
-# SAFETY
-# ============================================================
-
-# NEVER delete good existing data just because
-# the COE website temporarily failed.
-
-if not items:
-
-    print(
-        "WARNING: No notifications detected."
-    )
-
-    if old_items:
-
-        print(
-            f"Keeping existing "
-            f"{len(old_items)} notifications."
-        )
-
-    else:
-
-        print(
-            "No previous notifications exist."
-        )
-
-    raise SystemExit(0)
-
-
-# ============================================================
 # REMOVE DUPLICATES
 # ============================================================
 
-unique = {}
+def deduplicate(items):
 
+    unique = {}
 
-for item in items:
+    for item in items:
 
-    key = (
-        item.get(
-            "url",
-            ""
-        ).strip()
-    )
-
-    if not key:
-
-        key = (
+        url = clean(
             item.get(
-                "title",
+                "url",
                 ""
             )
-            .strip()
-            .lower()
         )
 
-    unique[key] = item
+        if url:
 
+            unique[url] = item
 
-items = list(
-    unique.values()
-)
+    return list(
+        unique.values()
+    )
 
 
 # ============================================================
 # SORT NEWEST FIRST
 # ============================================================
 
-items.sort(
-    key=date_sort_key,
-    reverse=True
-)
+def sort_key(item):
 
-
-# ============================================================
-# KEEP MAXIMUM 200
-# ============================================================
-
-items = items[:200]
-
-
-# ============================================================
-# DETECT NEW NOTIFICATIONS
-# ============================================================
-
-old_keys = {
-
-    (
+    return parse_datetime(
         item.get(
-            "title",
+            "date",
             ""
-        ).strip().lower(),
-
-        item.get(
-            "url",
-            ""
-        ).strip()
+        )
     )
 
-    for item in old_items
-}
+
+# ============================================================
+# MAIN
+# ============================================================
+
+def main():
+
+    old_items = load_old()
 
 
-new_items = [
+    print()
+    print("=" * 60)
+    print("ANNA UNIVERSITY COE CHECK")
+    print("=" * 60)
 
-    item
 
-    for item in items
+    # --------------------------------------------------------
+    # Primary COE website
+    # --------------------------------------------------------
 
-    if (
-        item.get(
-            "title",
-            ""
-        ).strip().lower(),
+    html = fetch(
+        PRIMARY
+    )
 
-        item.get(
-            "url",
-            ""
+    source = PRIMARY
+
+    items = []
+
+    if html:
+
+        items = parse_page(
+            html,
+            PRIMARY
+        )
+
+
+    # --------------------------------------------------------
+    # Fallback website
+    # --------------------------------------------------------
+
+    if not items:
+
+        print(
+            "Primary source returned "
+            "no notifications."
+        )
+
+        print(
+            "Trying fallback..."
+        )
+
+
+        fallback_html = fetch(
+            FALLBACK
+        )
+
+
+        if fallback_html:
+
+            fallback_items = parse_page(
+                fallback_html,
+                FALLBACK
+            )
+
+
+            if fallback_items:
+
+                items = fallback_items
+
+                source = FALLBACK
+
+
+    # --------------------------------------------------------
+    # SAFETY
+    # --------------------------------------------------------
+    #
+    # NEVER erase the existing JSON if the COE website
+    # temporarily fails.
+    # --------------------------------------------------------
+
+    if not items:
+
+        print(
+            "No notifications detected."
+        )
+
+        print(
+            f"Keeping existing "
+            f"{len(old_items)} notifications."
+        )
+
+        return
+
+
+    # --------------------------------------------------------
+    # Clean and sort
+    # --------------------------------------------------------
+
+    items = deduplicate(
+        items
+    )
+
+
+    items.sort(
+        key=sort_key,
+        reverse=True
+    )
+
+
+    # Keep latest 200.
+    items = items[:200]
+
+
+    # --------------------------------------------------------
+    # Save JSON
+    # --------------------------------------------------------
+
+    OUTPUT.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+
+    OUTPUT.write_text(
+        json.dumps(
+            items,
+            ensure_ascii=False,
+            indent=2
+        ),
+        encoding="utf-8"
+    )
+
+
+    # --------------------------------------------------------
+    # Find genuinely new notifications
+    # --------------------------------------------------------
+
+    old_urls = {
+
+        clean(
+            item.get(
+                "url",
+                ""
+            )
+        )
+
+        for item in old_items
+
+        if clean(
+            item.get(
+                "url",
+                ""
+            )
+        )
+    }
+
+
+    new_items = [
+
+        item
+
+        for item in items
+
+        if clean(
+            item.get(
+                "url",
+                ""
+            )
+        )
+        not in old_urls
+    ]
+
+
+    # --------------------------------------------------------
+    # Result
+    # --------------------------------------------------------
+
+    print()
+    print(
+        f"Source: {source}"
+    )
+
+    print(
+        f"Notifications found: "
+        f"{len(items)}"
+    )
+
+    print(
+        f"New notifications: "
+        f"{len(new_items)}"
+    )
+
+    print(
+        "Checked at:",
+        datetime.now(
+            timezone.utc
+        ).isoformat()
+    )
+
+    print("=" * 60)
+
+
+    for item in new_items[:20]:
+
+        print(
+            "NEW:",
+            item.get(
+                "date",
+                ""
+            ),
+            "|",
+            item.get(
+                "title",
+                ""
+            )
+        )
+
+        print(
+            "URL:",
+            item.get(
+                "url",
+                ""
+            )
+        )
+
+
+    print("=" * 60)
+
+
+# ============================================================
+# START
+# ============================================================
+
+if __name__ == "__main__":
+
+    main()
