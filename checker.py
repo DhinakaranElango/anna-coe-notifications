@@ -12,27 +12,31 @@ from bs4 import BeautifulSoup
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "data" / "notifications.json"
 
+# Official Anna University COE Institution Messages page
 PRIMARY = "https://coe.annauniv.edu/home/index.php"
 FALLBACK = "https://aucoe.annauniv.edu/"
 
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Linux; Android 10) "
-        "AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36"
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/140.0 Mobile Safari/537.36"
     ),
     "Accept": (
         "text/html,application/xhtml+xml,"
         "application/xml;q=0.9,*/*;q=0.8"
     ),
     "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
 }
 
 KEYWORDS = re.compile(
     r"(notification|circular|timetable|time table|exam|result|"
     r"hall.?ticket|revaluation|semester|schedule|fee|registration|"
     r"application|important|examination|arrear|regulation|"
-    r"certificate|convocation|marksheet|academic|assessment|"
-    r"candidate|photograph|answer scripts)",
+    r"certificate|convocation|marksheet|assessment|answer script|"
+    r"institutions)",
     re.I,
 )
 
@@ -51,8 +55,9 @@ def fetch(url):
 
             response = session.get(
                 url,
-                timeout=30,
+                timeout=45,
                 verify=False,
+                params={"_": int(time.time())},
             )
 
             response.raise_for_status()
@@ -79,7 +84,15 @@ def clean(text):
 
 
 def extract_date(text):
-    """Extract the notification date."""
+    """
+    Extract dates including:
+    19 Sep 2026
+    19 September 2026
+    19-09-2026
+    19/09/2026
+    19.09.2026
+    """
+
     patterns = [
         r"\b\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4}\b",
 
@@ -97,7 +110,11 @@ def extract_date(text):
     ]
 
     for pattern in patterns:
-        match = re.search(pattern, text, re.I)
+        match = re.search(
+            pattern,
+            text,
+            re.I,
+        )
 
         if match:
             return match.group(0)
@@ -105,96 +122,87 @@ def extract_date(text):
     return ""
 
 
-def extract_datetime(text):
-    """
-    Extract date + time when the COE page provides it.
-    Example:
-    19 Sep 2026 03:13 PM
-    """
-    pattern = re.compile(
-        r"\b(\d{1,2}\s+"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{4})"
-        r"(?:\s+(\d{1,2}:\d{2}\s*(?:AM|PM)))?",
-        re.I,
-    )
+def parse_date(date_text):
+    """Convert many date formats to datetime."""
 
-    match = pattern.search(text)
+    if not date_text:
+        return None
 
-    if not match:
-        return ""
-
-    date_part = match.group(1)
-    time_part = match.group(2) or ""
-
-    return clean(f"{date_part} {time_part}")
-
-
-def find_notification_blocks(soup):
-    """
-    Find likely COE notification/message blocks.
-
-    The COE website has historically used tables/divs containing:
-    - date/time
-    - notification message
-    - Click Here link
-    """
-
-    blocks = []
-
-    selectors = [
-        "tr",
-        "li",
-        ".message",
-        ".messages",
-        ".notice",
-        ".notification",
-        ".panel",
-        "p",
-        "div",
+    formats = [
+        "%d-%m-%Y",
+        "%d/%m/%Y",
+        "%d.%m.%Y",
+        "%d-%m-%y",
+        "%d/%m/%y",
+        "%d %b %Y",
+        "%d %B %Y",
+        "%b %d %Y",
+        "%B %d %Y",
+        "%b %d, %Y",
+        "%B %d, %Y",
     ]
 
-    seen = set()
-
-    for selector in selectors:
-        for element in soup.select(selector):
-            text = clean(
-                element.get_text(" ", strip=True)
+    for fmt in formats:
+        try:
+            return datetime.strptime(
+                date_text.strip(),
+                fmt,
             )
+        except ValueError:
+            pass
 
-            if not text:
-                continue
+    return None
 
-            # A COE institution message normally has
-            # a date/time and meaningful notification text.
-            has_date = bool(
-                re.search(
-                    r"\b\d{1,2}\s+"
-                    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-                    r"[a-z]*\s+\d{4}\b",
-                    text,
-                    re.I,
+
+def get_context(element):
+    """
+    Collect useful text around an element.
+    Prefer table rows / list items / notification boxes.
+    """
+
+    parts = []
+
+    for parent_tag in [
+        "tr",
+        "li",
+        "td",
+        "p",
+        "div",
+        "article",
+        "section",
+    ]:
+        parent = element.find_parent(parent_tag)
+
+        if parent:
+            text = clean(
+                parent.get_text(
+                    " ",
+                    strip=True,
                 )
             )
 
-            has_keyword = bool(KEYWORDS.search(text))
+            if text:
+                parts.append(text)
 
-            if not has_date and not has_keyword:
-                continue
+            # A table row or list item is usually enough.
+            if parent_tag in ("tr", "li"):
+                break
 
-            key = text[:1000]
-
-            if key in seen:
-                continue
-
-            seen.add(key)
-            blocks.append(element)
-
-    return blocks
+    return clean(" ".join(parts))
 
 
 def parse_page(html, source):
-    soup = BeautifulSoup(html, "html.parser")
+    """
+    Parse both:
+    1. linked notifications
+    2. notification boxes/text that may not have
+       a useful <a> title
+    """
+
+    soup = BeautifulSoup(
+        html,
+        "html.parser",
+    )
 
     for tag in soup(
         ["script", "style", "noscript"]
@@ -202,156 +210,56 @@ def parse_page(html, source):
         tag.decompose()
 
     items = []
-    seen_urls = set()
+    seen = set()
 
-    # ---------------------------------------------------------
-    # Method 1:
-    # Find notification blocks and their Click Here links.
-    # ---------------------------------------------------------
+    # -------------------------------------------------
+    # METHOD 1: Parse every useful link
+    # -------------------------------------------------
 
-    blocks = find_notification_blocks(soup)
+    for a in soup.find_all("a", href=True):
 
-    for block in blocks:
-        block_text = clean(
-            block.get_text(" ", strip=True)
+        title = clean(
+            a.get_text(
+                " ",
+                strip=True,
+            )
         )
 
-        date = extract_date(block_text)
-        datetime_text = extract_datetime(block_text)
+        href = a.get(
+            "href",
+            "",
+        ).strip()
 
-        links = block.find_all(
-            "a",
-            href=True
-        )
-
-        for link in links:
-            href = link.get("href", "").strip()
-            link_text = clean(
-                link.get_text(" ", strip=True)
-            )
-
-            if not href:
-                continue
-
-            if href.startswith("#"):
-                continue
-
-            if href.lower().startswith(
-                ("javascript:", "mailto:", "tel:")
-            ):
-                continue
-
-            url = urljoin(source, href)
-
-            lower_url = url.lower()
-
-            # Only accept useful document/portal links.
-            is_document = bool(
-                re.search(
-                    r"\.(pdf|doc|docx|xls|xlsx)"
-                    r"(?:[?#].*)?$",
-                    lower_url,
-                    re.I,
-                )
-            )
-
-            is_click_link = (
-                link_text.lower()
-                in {"click here", "clickhere"}
-            )
-
-            if not is_document and not is_click_link:
-                continue
-
-            if url in seen_urls:
-                continue
-
-            seen_urls.add(url)
-
-            # -------------------------------------------------
-            # Build a useful title from the notification text.
-            # -------------------------------------------------
-
-            title = block_text
-
-            # Remove the date/time at the beginning.
-            title = re.sub(
-                r"^\s*\d{1,2}\s+"
-                r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-                r"[a-z]*\s+\d{4}"
-                r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?"
-                r"\s*",
-                "",
-                title,
-                flags=re.I,
-            )
-
-            # Remove duplicated "Click Here".
-            title = re.sub(
-                r"\s*click\s*here\s*$",
-                "",
-                title,
-                flags=re.I,
-            )
-
-            title = clean(title)
-
-            if not title:
-                title = "Anna University COE Notification"
-
-            # Limit title length.
-            if len(title) > 300:
-                title = title[:297] + "..."
-
-            description = block_text
-
-            if len(description) > 800:
-                description = (
-                    description[:797] + "..."
-                )
-
-            items.append(
-                {
-                    "title": title,
-                    "url": url,
-                    "date": (
-                        datetime_text
-                        or date
-                    ),
-                    "description": description,
-                    "source": source,
-                }
-            )
-
-    # ---------------------------------------------------------
-    # Method 2:
-    # Generic link fallback.
-    #
-    # This catches document links that are not inside a
-    # notification block.
-    # ---------------------------------------------------------
-
-    for link in soup.find_all(
-        "a",
-        href=True
-    ):
-        href = link.get("href", "").strip()
-
-        if not href:
+        if not title:
             continue
 
         if href.startswith("#"):
             continue
 
         if href.lower().startswith(
-            ("javascript:", "mailto:", "tel:")
+            (
+                "javascript:",
+                "mailto:",
+                "tel:",
+            )
         ):
             continue
 
-        url = urljoin(source, href)
+        url = urljoin(
+            source,
+            href,
+        )
 
-        if url in seen_urls:
-            continue
+        context = get_context(a)
+
+        if not context:
+            context = title
+
+        searchable = (
+            f"{title} "
+            f"{context} "
+            f"{url}"
+        )
 
         is_document = bool(
             re.search(
@@ -362,62 +270,161 @@ def parse_page(html, source):
             )
         )
 
-        if not is_document:
+        if not (
+            is_document
+            or KEYWORDS.search(searchable)
+        ):
             continue
-
-        link_text = clean(
-            link.get_text(" ", strip=True)
-        )
-
-        parent = (
-            link.find_parent("tr")
-            or link.find_parent("li")
-            or link.find_parent("p")
-            or link.find_parent("div")
-        )
-
-        context = ""
-
-        if parent:
-            context = clean(
-                parent.get_text(
-                    " ",
-                    strip=True
-                )
-            )
-
-        searchable = clean(
-            f"{link_text} {context} {url}"
-        )
-
-        if not KEYWORDS.search(searchable):
-            continue
-
-        seen_urls.add(url)
 
         date = extract_date(context)
-        datetime_text = extract_datetime(
-            context
+
+        # Use surrounding text as title when
+        # the link itself is only "Click Here".
+        if title.lower() in {
+            "click here",
+            "here",
+            "read more",
+        }:
+            better_title = context
+
+            if len(better_title) > 180:
+                better_title = better_title[:177] + "..."
+
+            title_to_save = better_title
+        else:
+            title_to_save = title
+
+        key = (
+            title_to_save.lower(),
+            url,
+            date,
         )
 
-        title = (
-            context
-            or link_text
-            or "Anna University COE Notification"
+        if key in seen:
+            continue
+
+        seen.add(key)
+
+        description = context
+
+        if (
+            description.lower()
+            == title_to_save.lower()
+        ):
+            description = ""
+
+        if len(description) > 700:
+            description = (
+                description[:697]
+                + "..."
+            )
+
+        items.append(
+            {
+                "title": title_to_save,
+                "url": url,
+                "date": date,
+                "description": description,
+                "source": source,
+            }
         )
 
-        if len(title) > 300:
-            title = title[:297] + "..."
+    # -------------------------------------------------
+    # METHOD 2: Parse notification boxes themselves
+    #
+    # This is important for the COE page because a
+    # notification can exist even when its visible
+    # text is not the <a> text.
+    # -------------------------------------------------
+
+    candidates = []
+
+    for element in soup.find_all(
+        ["div", "td", "li", "p", "tr"]
+    ):
+        text = clean(
+            element.get_text(
+                " ",
+                strip=True,
+            )
+        )
+
+        if len(text) < 20:
+            continue
+
+        date = extract_date(text)
+
+        if not date:
+            continue
+
+        if not KEYWORDS.search(text):
+            continue
+
+        # Avoid gigantic page containers.
+        if len(text) > 1200:
+            continue
+
+        candidates.append(
+            (
+                element,
+                text,
+                date,
+            )
+        )
+
+    for element, text, date in candidates:
+
+        # Find a useful link inside this box.
+        link = element.find(
+            "a",
+            href=True,
+        )
+
+        if link:
+            url = urljoin(
+                source,
+                link.get(
+                    "href",
+                    "",
+                ).strip(),
+            )
+        else:
+            url = source
+
+        # Prefer the full visible notification text.
+        title = text
+
+        # Remove repeated spaces.
+        title = clean(title)
+
+        if len(title) > 220:
+            title = title[:217] + "..."
+
+        key = (
+            title.lower(),
+            url,
+            date,
+        )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+
+        description = text
+
+        if len(description) > 700:
+            description = (
+                description[:697]
+                + "..."
+            )
 
         items.append(
             {
                 "title": title,
                 "url": url,
-                "date": (
-                    datetime_text
-                    or date
-                ),
-                "description": context[:800],
+                "date": date,
+                "description": description,
                 "source": source,
             }
         )
@@ -441,128 +448,115 @@ def load_old():
 
     except Exception as error:
         print(
-            f"Could not read old notifications: "
-            f"{error}"
+            "Could not read old notifications:",
+            error,
         )
 
     return []
 
 
-def date_sort_key(item):
+def item_key(item):
+    return (
+        item.get(
+            "title",
+            "",
+        ).strip().lower(),
+
+        item.get(
+            "url",
+            "",
+        ).strip(),
+
+        item.get(
+            "date",
+            "",
+        ).strip(),
+    )
+
+
+def sort_key(item):
+    """
+    Correctly sort:
+    19 Sep 2026
+    18 Sep 2026
+    15-09-2026
+    etc.
+    """
+
     date_text = item.get(
         "date",
-        ""
+        "",
     )
 
-    formats = [
-        "%d %b %Y %I:%M %p",
-        "%d %b %Y",
-        "%d %B %Y %I:%M %p",
-        "%d %B %Y",
-        "%d-%m-%Y",
-        "%d/%m/%Y",
-        "%d.%m.%Y",
-    ]
-
-    for fmt in formats:
-        try:
-            return datetime.strptime(
-                date_text,
-                fmt
-            )
-        except ValueError:
-            pass
-
-    # Try to find the date inside a larger string.
-    match = re.search(
-        r"(\d{1,2}\s+"
-        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-        r"[a-z]*\s+\d{4}"
-        r"(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM))?)",
-        date_text,
-        re.I,
+    parsed = parse_date(
+        date_text
     )
 
-    if match:
-        value = clean(match.group(1))
-
-        for fmt in formats:
-            try:
-                return datetime.strptime(
-                    value,
-                    fmt
-                )
-            except ValueError:
-                pass
+    if parsed:
+        return parsed
 
     return datetime.min
 
 
-# =============================================================
+# =====================================================
 # MAIN
-# =============================================================
+# =====================================================
 
 old_items = load_old()
 
-print("=" * 60)
-print("ANNA UNIVERSITY COE CHECK")
-print("=" * 60)
-
 html = fetch(PRIMARY)
-
-used_source = PRIMARY
-items = []
 
 if html:
     items = parse_page(
         html,
-        PRIMARY
+        PRIMARY,
     )
 
-print("DEBUG: Total HTML length:", len(html))
+    used_source = PRIMARY
 
-debug_soup = BeautifulSoup(html, "html.parser")
-
-print("DEBUG: All visible page text:")
-print(
-    debug_soup.get_text(
-        " ",
-        strip=True
-    )[:10000]
-)
-
-print("DEBUG: All links:")
-
-for debug_link in debug_soup.find_all(
-    "a",
-    href=True
-):
+else:
     print(
-        "LINK:",
-        debug_link.get_text(
-            " ",
-            strip=True
-        ),
-        "=>",
-        debug_link.get("href")
-    )
-
-if not items:
-    print(
-        "Primary COE page produced no "
-        "notifications."
+        "Primary COE website unavailable."
     )
 
     print(
         "Trying official fallback..."
     )
 
-    fallback_html = fetch(FALLBACK)
+    html = fetch(FALLBACK)
+
+    if html:
+        items = parse_page(
+            html,
+            FALLBACK,
+        )
+
+        used_source = FALLBACK
+
+    else:
+        items = []
+        used_source = ""
+
+
+# If the primary page loaded but parser found
+# nothing, try fallback too.
+
+if not items and used_source == PRIMARY:
+
+    print(
+        "Primary page loaded but no "
+        "notifications were detected."
+    )
+
+    fallback_html = fetch(
+        FALLBACK
+    )
 
     if fallback_html:
+
         fallback_items = parse_page(
             fallback_html,
-            FALLBACK
+            FALLBACK,
         )
 
         if fallback_items:
@@ -570,12 +564,11 @@ if not items:
             used_source = FALLBACK
 
 
-# =============================================================
-# SAFETY:
-# Never erase good old data when the COE site fails.
-# =============================================================
+# Never erase good existing data because
+# the website temporarily failed.
 
 if not items:
+
     print(
         "WARNING: No notifications detected."
     )
@@ -594,148 +587,117 @@ if not items:
     raise SystemExit(0)
 
 
-# =============================================================
-# Remove duplicates.
-# =============================================================
+# =====================================================
+# Remove duplicates
+# =====================================================
 
 unique = {}
 
 for item in items:
-    key = (
-        item.get(
-            "url",
-            ""
-        ).strip()
-    )
 
-    if not key:
-        key = (
-            item.get(
-                "title",
-                ""
-            ).strip().lower()
-        )
+    key = item_key(item)
 
-    unique[key] = item
-
+    if key not in unique:
+        unique[key] = item
 
 items = list(
     unique.values()
 )
 
 
-# =============================================================
-# Sort newest notification first.
-# =============================================================
+# =====================================================
+# Sort newest first
+# =====================================================
 
 items.sort(
-    key=date_sort_key,
-    reverse=True
+    key=sort_key,
+    reverse=True,
 )
 
 
-# =============================================================
-# Keep maximum 200 notifications.
-# =============================================================
+# Keep feed reasonably sized.
 
 items = items[:200]
 
 
-# =============================================================
-# Detect new notifications.
-# =============================================================
+# =====================================================
+# Detect genuinely new notifications
+# =====================================================
 
 old_keys = {
-    (
-        item.get(
-            "title",
-            ""
-        ).strip().lower(),
-
-        item.get(
-            "url",
-            ""
-        ).strip(),
-    )
-
+    item_key(item)
     for item in old_items
 }
-
 
 new_items = [
     item
     for item in items
-
-    if (
-        item.get(
-            "title",
-            ""
-        ).strip().lower(),
-
-        item.get(
-            "url",
-            ""
-        ).strip(),
-    )
+    if item_key(item)
     not in old_keys
 ]
 
 
-# =============================================================
-# Save JSON.
-# =============================================================
+# =====================================================
+# Write JSON
+# =====================================================
 
 OUTPUT.parent.mkdir(
     parents=True,
-    exist_ok=True
+    exist_ok=True,
 )
 
 OUTPUT.write_text(
     json.dumps(
         items,
         ensure_ascii=False,
-        indent=2
+        indent=2,
     ),
-    encoding="utf-8"
+    encoding="utf-8",
 )
 
 
-# =============================================================
-# Report.
-# =============================================================
+# =====================================================
+# Report
+# =====================================================
 
 checked_at = datetime.now(
     timezone.utc
 ).isoformat()
 
 print()
+print("=" * 60)
+print(
+    "ANNA UNIVERSITY COE CHECK"
+)
+print("=" * 60)
+
 print(
     f"Source: {used_source}"
 )
 
 print(
-    f"Notifications found: "
-    f"{len(items)}"
+    f"Notifications found: {len(items)}"
 )
 
 print(
-    f"New notifications: "
-    f"{len(new_items)}"
+    f"New notifications: {len(new_items)}"
 )
 
 print(
-    f"Checked at: "
-    f"{checked_at}"
+    f"Checked at: {checked_at}"
 )
 
 print("=" * 60)
 
 for item in new_items[:20]:
+
     print(
         "NEW:",
-        item.get("date", ""),
+        item["date"],
         "|",
-        item.get("title", ""),
+        item["title"],
         "->",
-        item.get("url", "")
-                                )
+        item["url"],
+    )
+
+print("=" * 60)
