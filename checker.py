@@ -2,22 +2,24 @@ import json
 import re
 import time
 from pathlib import Path
-from urllib.parse import urljoin
 from datetime import datetime
+from urllib.parse import urljoin
 
 import requests
-import urllib3
 from bs4 import BeautifulSoup
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # ============================================================
-# ANNA UNIVERSITY COE NOTIFICATION CHECKER
+# CONFIG
 # ============================================================
 
-PRIMARY_URL = "https://coe.annauniv.edu/home/index.php"
+COE_URL = "https://coe.annauniv.edu/home/index.php"
 FALLBACK_URL = "https://aucoe.annauniv.edu/"
 
-OUTPUT_FILE = Path("data/notifications.json")
+OUTPUT = Path("data/notifications.json")
 
 HEADERS = {
     "User-Agent": (
@@ -25,918 +27,548 @@ HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/140.0.0.0 Safari/537.36"
     ),
-    "Accept": (
-        "text/html,application/xhtml+xml,application/xml;"
-        "q=0.9,image/avif,image/webp,*/*;q=0.8"
-    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
-    "Connection": "keep-alive",
+    "Cache-Control": "no-cache",
 }
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # ============================================================
 # DATE PATTERNS
 # ============================================================
 
-# Example:
-# 19 Sep 2026 03:13 PM
-# 19 September 2026 03:13 PM
 DATE_TIME_RE = re.compile(
     r"\b"
-    r"(\d{1,2})"
-    r"\s+"
-    r"(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"
-    r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|"
-    r"Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
-    r"\s+"
-    r"(\d{4})"
-    r"(?:\s+|,?\s*)"
-    r"(\d{1,2}):(\d{2})"
-    r"\s*"
-    r"(AM|PM)"
+    r"\d{1,2}\s+"
+    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*"
+    r"\s+\d{4}"
+    r"\s+\d{1,2}:\d{2}\s*(?:AM|PM)"
     r"\b",
     re.IGNORECASE,
 )
 
-# Numeric dates:
-# 19-09-2026
-# 19/09/2026
-# 19.09.2026
-NUMERIC_DATE_RE = re.compile(
-    r"\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b"
-)
-
-# Text dates:
-# 19 Sep 2026
-# 19 September 2026
-TEXT_DATE_RE = re.compile(
-    r"\b"
-    r"(\d{1,2})"
-    r"\s+"
-    r"(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"
-    r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|"
-    r"Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
-    r"\s+"
-    r"(\d{4})"
-    r"\b",
+DATE_RE = re.compile(
+    r"\b(?:"
+    r"\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}"
+    r"|"
+    r"\d{1,2}\s+"
+    r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*"
+    r"\s+\d{4}"
+    r")\b",
     re.IGNORECASE,
 )
 
 
-MONTHS = {
-    "jan": 1,
-    "january": 1,
-    "feb": 2,
-    "february": 2,
-    "mar": 3,
-    "march": 3,
-    "apr": 4,
-    "april": 4,
-    "may": 5,
-    "jun": 6,
-    "june": 6,
-    "jul": 7,
-    "july": 7,
-    "aug": 8,
-    "august": 8,
-    "sep": 9,
-    "september": 9,
-    "oct": 10,
-    "october": 10,
-    "nov": 11,
-    "november": 11,
-    "dec": 12,
-    "december": 12,
-}
-
-
 # ============================================================
-# HELPERS
+# BASIC HELPERS
 # ============================================================
 
-def clean_text(value):
-    """Normalize whitespace."""
-    if not value:
-        return ""
-
-    value = value.replace("\xa0", " ")
-    value = re.sub(r"\s+", " ", value)
-
-    return value.strip()
+def clean(text):
+    return " ".join(str(text or "").split())
 
 
-def normalize_url(url):
-    """Convert relative URL to absolute URL."""
-    if not url:
-        return ""
-
-    url = url.strip()
-
-    if url.startswith("#"):
-        return ""
-
-    return urljoin(PRIMARY_URL, url)
-
-
-def is_document_url(url):
-    """Return True for likely notification/document links."""
-    if not url:
-        return False
-
-    lower = url.lower()
-
-    document_extensions = (
-        ".pdf",
-        ".doc",
-        ".docx",
-        ".xls",
-        ".xlsx",
-        ".jpg",
-        ".jpeg",
-        ".png",
-    )
-
-    keywords = (
-        "pdf",
-        "notification",
-        "circular",
-        "coe",
-        "result",
-        "revaluation",
-        "valuation",
-        "timetable",
-        "time-table",
-        "exam",
-        "examination",
-        "application",
-        "download",
-    )
-
-    if lower.endswith(document_extensions):
-        return True
-
-    return any(keyword in lower for keyword in keywords)
-
-
-def is_notification_text(text):
-    """Check whether text looks like a COE notification."""
-
-    if not text:
-        return False
-
-    lower = text.lower()
-
-    keywords = (
-        "notification",
-        "web portal",
-        "revaluation",
-        "examination",
-        "examinations",
-        "examination",
-        "answer script",
-        "answer scripts",
-        "hall ticket",
-        "results",
-        "result",
-        "timetable",
-        "time table",
-        "valuation",
-        "application",
-        "circular",
-        "important",
-        "kind attention",
-        "institutions",
-        "students",
-        "ug/pg",
-        "ug / pg",
-        "ph.d",
-        "ph.d.",
-    )
-
-    return any(keyword in lower for keyword in keywords)
-
-
-def parse_text_date(match):
-    """Convert a regex date match into DD-MM-YYYY."""
-
-    if not match:
-        return None
-
-    try:
-        day = int(match.group(1))
-        month_name = match.group(2).lower()
-        year = int(match.group(3))
-
-        month = MONTHS.get(month_name)
-
-        if not month:
-            return None
-
-        dt = datetime(year, month, day)
-
-        return dt.strftime("%d-%m-%Y")
-
-    except Exception:
-        return None
-
-
-def parse_numeric_date(match):
-    """Convert numeric date into DD-MM-YYYY."""
-
-    if not match:
-        return None
-
-    try:
-        day = int(match.group(1))
-        month = int(match.group(2))
-        year = int(match.group(3))
-
-        # Basic validation
-        dt = datetime(year, month, day)
-
-        return dt.strftime("%d-%m-%Y")
-
-    except Exception:
-        return None
-
-
-def extract_date_time(text):
-    """
-    Extract the strongest posting date from text.
-
-    Priority:
-    1. Date + time
-    2. Text date
-    3. Numeric date
-
-    This is important because a notification may contain:
-        19 Sep 2026 03:13 PM
-    and also:
-        21-09-2026
-
-    The posting timestamp must win.
-    """
-
-    if not text:
-        return None
-
-    # --------------------------------------------------------
-    # 1. DATE + TIME
-    # --------------------------------------------------------
-
-    matches = list(DATE_TIME_RE.finditer(text))
-
-    if matches:
-        # Use the first timestamp.
-        match = matches[0]
-
+def fetch(url):
+    for attempt in range(1, 4):
         try:
-            day = int(match.group(1))
-            month_name = match.group(2).lower()
-            year = int(match.group(3))
-
-            hour = int(match.group(4))
-            minute = int(match.group(5))
-            am_pm = match.group(6).upper()
-
-            month = MONTHS.get(month_name)
-
-            if month:
-                if am_pm == "PM" and hour != 12:
-                    hour += 12
-
-                if am_pm == "AM" and hour == 12:
-                    hour = 0
-
-                dt = datetime(
-                    year,
-                    month,
-                    day,
-                    hour,
-                    minute,
-                )
-
-                return dt.strftime("%d-%m-%Y")
-
-        except Exception:
-            pass
-
-    # --------------------------------------------------------
-    # 2. TEXT DATE
-    # --------------------------------------------------------
-
-    match = TEXT_DATE_RE.search(text)
-
-    if match:
-        date = parse_text_date(match)
-
-        if date:
-            return date
-
-    # --------------------------------------------------------
-    # 3. NUMERIC DATE
-    # --------------------------------------------------------
-
-    match = NUMERIC_DATE_RE.search(text)
-
-    if match:
-        date = parse_numeric_date(match)
-
-        if date:
-            return date
-
-    return None
-
-
-def extract_timestamp(text):
-    """Return the exact posting timestamp if available."""
-
-    if not text:
-        return None
-
-    match = DATE_TIME_RE.search(text)
-
-    if not match:
-        return None
-
-    try:
-        day = int(match.group(1))
-        month_name = match.group(2).lower()
-        year = int(match.group(3))
-
-        hour = int(match.group(4))
-        minute = int(match.group(5))
-        am_pm = match.group(6).upper()
-
-        month = MONTHS.get(month_name)
-
-        if not month:
-            return None
-
-        if am_pm == "PM" and hour != 12:
-            hour += 12
-
-        if am_pm == "AM" and hour == 12:
-            hour = 0
-
-        dt = datetime(
-            year,
-            month,
-            day,
-            hour,
-            minute,
-        )
-
-        return dt
-
-    except Exception:
-        return None
-
-
-def looks_like_date_only(text):
-    """Detect if a string is mainly a date."""
-
-    if not text:
-        return False
-
-    text = clean_text(text)
-
-    if NUMERIC_DATE_RE.fullmatch(text):
-        return True
-
-    if TEXT_DATE_RE.fullmatch(text):
-        return True
-
-    if DATE_TIME_RE.fullmatch(text):
-        return True
-
-    return False
-
-
-def title_from_link(anchor):
-    """
-    Extract a useful title from an <a>.
-    """
-
-    text = clean_text(anchor.get_text(" ", strip=True))
-
-    if text:
-        return text
-
-    href = anchor.get("href", "")
-
-    return clean_text(href)
-
-
-def surrounding_text(anchor):
-    """
-    Get useful text around a link.
-
-    We intentionally search multiple parent levels because
-    Anna University may place the timestamp and link in
-    different HTML elements.
-    """
-
-    pieces = []
-
-    # Anchor itself
-    anchor_text = clean_text(anchor.get_text(" ", strip=True))
-
-    if anchor_text:
-        pieces.append(anchor_text)
-
-    # Parent levels
-    current = anchor
-
-    for _ in range(6):
-        current = current.parent
-
-        if current is None:
-            break
-
-        text = clean_text(current.get_text(" ", strip=True))
-
-        if text:
-            pieces.append(text)
-
-    # Remove duplicates while preserving order
-    result = []
-
-    seen = set()
-
-    for piece in pieces:
-        if piece not in seen:
-            result.append(piece)
-            seen.add(piece)
-
-    return result
-
-
-def find_nearby_timestamp(anchor, soup):
-    """
-    Search around an anchor for a posting timestamp.
-
-    We don't require the timestamp to be in the same container.
-    """
-
-    # --------------------------------------------------------
-    # Search parent elements
-    # --------------------------------------------------------
-
-    current = anchor
-
-    for _ in range(8):
-        current = current.parent
-
-        if current is None:
-            break
-
-        text = clean_text(current.get_text(" ", strip=True))
-
-        if DATE_TIME_RE.search(text):
-            timestamp = extract_timestamp(text)
-
-            if timestamp:
-                return timestamp
-
-    # --------------------------------------------------------
-    # Search previous/next text nodes
-    # --------------------------------------------------------
-
-    for element in anchor.find_all_previous(string=True, limit=30):
-
-        text = clean_text(str(element))
-
-        if not text:
-            continue
-
-        timestamp = extract_timestamp(text)
-
-        if timestamp:
-            return timestamp
-
-    for element in anchor.find_all_next(string=True, limit=30):
-
-        text = clean_text(str(element))
-
-        if not text:
-            continue
-
-        timestamp = extract_timestamp(text)
-
-        if timestamp:
-            return timestamp
-
-    # --------------------------------------------------------
-    # Search whole page as final fallback
-    # --------------------------------------------------------
-
-    page_text = clean_text(soup.get_text(" ", strip=True))
-
-    timestamp = extract_timestamp(page_text)
-
-    return timestamp
-
-
-def get_best_context(anchor):
-    """
-    Build notification text from nearby HTML.
-    """
-
-    contexts = surrounding_text(anchor)
-
-    if not contexts:
-        return title_from_link(anchor)
-
-    # Prefer the smallest useful context that contains
-    # notification-related wording.
-    for context in contexts:
-        if is_notification_text(context):
-            return context
-
-    # Otherwise use the largest available nearby context.
-    return max(contexts, key=len)
-
-
-def clean_notification_title(text):
-    """
-    Clean title without accidentally removing useful dates.
-    """
-
-    text = clean_text(text)
-
-    # Remove repeated spaces
-    text = re.sub(r"\s+", " ", text)
-
-    # Remove common UI-only prefixes
-    text = re.sub(
-        r"^(click here|click|view|download)\s*[:\-]?\s*",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-
-    return text.strip()
-
-
-def make_record(anchor, context, timestamp):
-    """
-    Create a notification record.
-    """
-
-    href = normalize_url(anchor.get("href", ""))
-
-    if not href:
-        return None
-
-    title = clean_notification_title(title_from_link(anchor))
-
-    if not title:
-        title = clean_notification_title(context)
-
-    if not title:
-        return None
-
-    # Avoid using a date-only link as the title.
-    if looks_like_date_only(title):
-        title = clean_notification_title(context)
-
-    if not title:
-        return None
-
-    # Notification date comes from timestamp first.
-    date = None
-
-    if timestamp:
-        date = timestamp.strftime("%d-%m-%Y")
-
-    if not date:
-        date = extract_date_time(context)
-
-    if not date:
-        date = extract_date_time(title)
-
-    if not date:
-        return None
-
-    description = clean_text(context)
-
-    # Prevent giant page-sized descriptions.
-    if len(description) > 1500:
-        description = description[:1500].rstrip() + "..."
-
-    return {
-        "title": title,
-        "url": href,
-        "date": date,
-        "description": description,
-        "source": PRIMARY_URL,
-    }
-
-
-# ============================================================
-# HTTP
-# ============================================================
-
-def fetch_page(url, attempts=3):
-    """Download the COE page."""
-
-    for attempt in range(1, attempts + 1):
-
-        try:
-            print(
-                f"Fetching {url} "
-                f"(attempt {attempt}/{attempts})"
-            )
+            print(f"Fetching {url} (attempt {attempt}/3)")
 
             response = requests.get(
                 url,
                 headers=HEADERS,
-                timeout=30,
+                timeout=45,
                 verify=False,
+                params={"_": str(int(time.time()))},
             )
 
             response.raise_for_status()
 
-            content = response.content
-
-            print(
-                f"Fetched successfully: "
-                f"{len(content)} bytes"
-            )
+            print(f"Fetched successfully: {len(response.text)} bytes")
 
             return response.text
 
-        except Exception as exc:
+        except Exception as error:
+            print(f"Fetch error: {error}")
 
-            print(
-                f"Fetch failed: {type(exc).__name__}: {exc}"
-            )
-
-            if attempt < attempts:
-                time.sleep(3)
+            if attempt < 3:
+                time.sleep(2)
 
     return None
 
 
+def parse_date(value):
+    value = clean(value)
+
+    formats = [
+        "%d %b %Y %I:%M %p",
+        "%d %B %Y %I:%M %p",
+        "%d %b %Y",
+        "%d %B %Y",
+        "%d-%m-%Y",
+        "%d/%m/%Y",
+        "%d.%m.%Y",
+    ]
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            pass
+
+    return datetime.min
+
+
+def extract_posted_date(text):
+    text = clean(text)
+
+    # IMPORTANT:
+    # Posting timestamp always wins over deadline dates.
+    match = DATE_TIME_RE.search(text)
+
+    if match:
+        return match.group(0)
+
+    match = DATE_RE.search(text)
+
+    if match:
+        return match.group(0)
+
+    return ""
+
+
+def is_useful_link(href, text):
+    href_lower = href.lower()
+    text_lower = text.lower()
+
+    document = re.search(
+        r"\.(pdf|doc|docx|xls|xlsx)(?:[?#].*)?$",
+        href_lower,
+    )
+
+    words = (
+        "click here",
+        "notification",
+        "revaluation",
+        "examination",
+        "answer script",
+        "answer scripts",
+        "result",
+        "timetable",
+        "valuation",
+        "application",
+        "circular",
+        "web portal",
+        "kind attention",
+    )
+
+    return bool(document) or any(word in text_lower for word in words)
+
+
 # ============================================================
-# HTML PARSER
+# PARSER
 # ============================================================
 
-def parse_page(html):
-    """
-    Parse COE notifications.
-
-    Important:
-    We DO NOT assume:
-        timestamp + link = same HTML element.
-
-    Instead we:
-        1. inspect all links
-        2. identify notification-like links
-        3. search around each link for timestamp
-        4. use the page structure as fallback
-    """
-
-    if not html:
-        return []
-
+def parse_page(html, source):
     soup = BeautifulSoup(html, "html.parser")
 
-    records = []
+    for tag in soup.find_all(["script", "style", "noscript"]):
+        tag.decompose()
 
-    all_links = soup.find_all("a", href=True)
+    page_text = clean(soup.get_text(" ", strip=True))
 
-    print(f"Total links found: {len(all_links)}")
+    timestamps = DATE_TIME_RE.findall(page_text)
 
-    # ========================================================
-    # STEP 1 — Find all timestamp strings on page
-    # ========================================================
+    print(f"Posting timestamps found on page: {len(timestamps)}")
 
-    page_text = clean_text(
-        soup.get_text(" ", strip=True)
-    )
+    for timestamp in timestamps[:20]:
+        print(f"  TIMESTAMP: {timestamp}")
 
-    timestamps = []
+    links = soup.find_all("a", href=True)
 
-    for match in DATE_TIME_RE.finditer(page_text):
-
-        raw = clean_text(match.group(0))
-        dt = extract_timestamp(raw)
-
-        if dt:
-            timestamps.append(
-                (raw, dt)
-            )
-
-    print(
-        f"Posting timestamps found on page: "
-        f"{len(timestamps)}"
-    )
-
-    for raw, dt in timestamps[:20]:
-        print(
-            f"  TIMESTAMP: {raw} "
-            f"-> {dt.strftime('%d-%m-%Y %I:%M %p')}"
-        )
-
-    # ========================================================
-    # STEP 2 — Inspect links
-    # ========================================================
+    print(f"Total links found: {len(links)}")
 
     candidates = []
 
-    for index, anchor in enumerate(all_links):
-
-        href = normalize_url(
-            anchor.get("href", "")
-        )
+    for link in links:
+        href = clean(link.get("href", ""))
+        text = clean(link.get_text(" ", strip=True))
 
         if not href:
             continue
 
-        link_text = clean_text(
-            anchor.get_text(" ", strip=True)
-        )
-
-        contexts = surrounding_text(anchor)
-
-        combined = " ".join(contexts)
-
-        # ----------------------------------------------------
-        # Determine whether this looks like notification
-        # ----------------------------------------------------
-
-        notification_like = (
-            is_document_url(href)
-            or is_notification_text(link_text)
-            or is_notification_text(combined)
-        )
-
-        if not notification_like:
+        if href.startswith("#"):
             continue
 
-        candidates.append(
-            (
-                index,
-                anchor,
-                href,
-                link_text,
-                combined,
-            )
-        )
-
-    print(
-        f"Notification-like links found: "
-        f"{len(candidates)}"
-    )
-
-    # ========================================================
-    # STEP 3 — Build records
-    # ========================================================
-
-    for index, anchor, href, link_text, combined in candidates:
-
-        timestamp = find_nearby_timestamp(
-            anchor,
-            soup,
-        )
-
-        context = get_best_context(anchor)
-
-        record = make_record(
-            anchor,
-            context,
-            timestamp,
-        )
-
-        if record:
-            records.append(record)
-
-            timestamp_text = (
-                timestamp.strftime(
-                    "%d-%m-%Y %I:%M %p"
-                )
-                if timestamp
-                else "NO TIMESTAMP"
-            )
-
-            print()
-            print("FOUND NOTIFICATION")
-            print(f"  Link: {record['url']}")
-            print(f"  Title: {record['title'][:180]}")
-            print(f"  Date: {record['date']}")
-            print(f"  Timestamp: {timestamp_text}")
-
-    # ========================================================
-    # STEP 4 — De-duplicate
-    # ========================================================
-
-    unique = {}
-
-    for record in records:
-
-        key = (
-            record["url"].strip().lower()
-            or (
-                record["title"].strip().lower(),
-                record["date"],
-            )
-        )
-
-        if key not in unique:
-            unique[key] = record
-            continue
-
-        # Prefer the record with the longer description.
-        old = unique[key]
-
-        if len(record["description"]) > len(
-            old["description"]
+        if href.lower().startswith(
+            ("javascript:", "mailto:", "tel:")
         ):
-            unique[key] = record
+            continue
 
-    records = list(unique.values())
+        absolute_url = urljoin(source, href)
 
-    # ========================================================
-    # STEP 5 — Sort newest first
-    # ========================================================
-
-    def sort_key(record):
-
-        try:
-            return datetime.strptime(
-                record["date"],
-                "%d-%m-%Y",
+        if is_useful_link(absolute_url, text):
+            candidates.append(
+                (link, absolute_url, text)
             )
-        except Exception:
-            return datetime.min
 
-    records.sort(
-        key=sort_key,
-        reverse=True,
-    )
+    print(f"Notification-like links found: {len(candidates)}")
 
-    return records
+    results = {}
+
+    # --------------------------------------------------------
+    # Find records
+    # --------------------------------------------------------
+
+    for link, url, link_text in candidates:
+
+        # Gather nearby text from parents.
+        contexts = []
+
+        current = link
+
+        for _ in range(7):
+            current = current.parent
+
+            if current is None:
+                break
+
+            text = clean(
+                current.get_text(" ", strip=True)
+            )
+
+            if text and text not in contexts:
+                contexts.append(text)
+
+        # Use the smallest nearby context that contains
+        # useful notification wording.
+        context = ""
+
+        for item in contexts:
+            lower = item.lower()
+
+            if (
+                "notification" in lower
+                or "revaluation" in lower
+                or "examination" in lower
+                or "answer script" in lower
+                or "web portal" in lower
+                or "kind attention" in lower
+                or "result" in lower
+            ):
+                context = item
+                break
+
+        if not context and contexts:
+            context = contexts[0]
+
+        # ----------------------------------------------------
+        # Extract posting date
+        # ----------------------------------------------------
+
+        posted_date = extract_posted_date(context)
+
+        # Search nearby HTML if parent context did not contain
+        # the timestamp.
+        if not posted_date:
+
+            previous_texts = link.find_all_previous(
+                string=True,
+                limit=30,
+            )
+
+            for node in previous_texts:
+                candidate = extract_posted_date(str(node))
+
+                if candidate:
+                    posted_date = candidate
+                    break
+
+        if not posted_date:
+
+            next_texts = link.find_all_next(
+                string=True,
+                limit=30,
+            )
+
+            for node in next_texts:
+                candidate = extract_posted_date(str(node))
+
+                if candidate:
+                    posted_date = candidate
+                    break
+
+        # Last resort: use page date.
+        if not posted_date:
+            posted_date = extract_posted_date(page_text)
+
+        if not posted_date:
+            continue
+
+        # ----------------------------------------------------
+        # Title
+        # ----------------------------------------------------
+
+        title = link_text
+
+        if not title or title.lower() in {
+            "click here",
+            "here",
+            "read more",
+            "download",
+        }:
+            title = context
+
+        title = clean(title)
+
+        # Remove timestamp from beginning of title.
+        title = re.sub(
+            r"^\s*" + re.escape(posted_date) + r"\s*",
+            "",
+            title,
+            flags=re.IGNORECASE,
+        )
+
+        title = re.sub(
+            r"\s*click\s*here\s*$",
+            "",
+            title,
+            flags=re.IGNORECASE,
+        )
+
+        title = clean(title)
+
+        if not title:
+            title = "Anna University COE Notification"
+
+        if len(title) > 500:
+            title = title[:497] + "..."
+
+        # ----------------------------------------------------
+        # Description
+        # ----------------------------------------------------
+
+        description = clean(context)
+
+        if len(description) > 1000:
+            description = description[:997] + "..."
+
+        record = {
+            "title": title,
+            "url": url,
+            "date": posted_date,
+            "description": description,
+            "source": source,
+        }
+
+        results[url] = record
+
+        print()
+        print("FOUND NOTIFICATION")
+        print(f"Date: {posted_date}")
+        print(f"Title: {title[:180]}")
+        print(f"URL: {url}")
+
+    print()
+    print(f"Notifications parsed: {len(results)}")
+
+    return list(results.values())
 
 
 # ============================================================
-# JSON
+# EXISTING DATA
 # ============================================================
 
 def load_existing():
-    """Load existing notifications.json."""
-
-    if not OUTPUT_FILE.exists():
+    if not OUTPUT.exists():
         return []
 
     try:
-
-        with OUTPUT_FILE.open(
-            "r",
-            encoding="utf-8",
-        ) as file:
-
+        with open(OUTPUT, "r", encoding="utf-8") as file:
             data = json.load(file)
 
         if isinstance(data, list):
             return data
 
-        return []
+    except Exception as error:
+        print(f"JSON read error: {error}")
 
-    except Exception as exc:
-
-        print(
-            f"Could not read existing JSON: "
-            f"{type(exc).__name__}: {exc}"
-        )
-
-        return []
+    return []
 
 
-def save_records(records):
-    """Save notification records."""
+# ============================================================
+# MERGE
+# ============================================================
 
-    OUTPUT_FILE.parent.mkdir(
+def merge(old_items, new_items):
+    combined = {}
+
+    for item in old_items:
+        url = clean(item.get("url", ""))
+
+        if url:
+            combined[url] = item
+
+    for item in new_items:
+        url = clean(item.get("url", ""))
+
+        if url:
+            combined[url] = item
+
+    items = list(combined.values())
+
+    items.sort(
+        key=lambda item: parse_date(
+            item.get("date", "")
+        ),
+        reverse=True,
+    )
+
+    return items[:200]
+
+
+# ============================================================
+# SAVE
+# ============================================================
+
+def save(items):
+    OUTPUT.parent.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    with OUTPUT_FILE.open(
+    with open(
+        OUTPUT,
         "w",
         encoding="utf-8",
     ) as file:
-
         json.dump(
-            records,
+            items,
             file,
-            indent=2,
             ensure_ascii=False,
+            indent=2,
         )
 
         file.write("\n")
 
 
-def record_key(record
+# ============================================================
+# MAIN
+# ============================================================
+
+def main():
+
+    print()
+    print("=" * 65)
+    print("ANNA UNIVERSITY COE MONITOR")
+    print("=" * 65)
+
+    old_items = load_existing()
+
+    print(f"Existing records: {len(old_items)}")
+
+    # --------------------------------------------------------
+    # PRIMARY WEBSITE
+    # --------------------------------------------------------
+
+    html = fetch(COE_URL)
+
+    new_items = []
+
+    if html:
+        new_items = parse_page(
+            html,
+            COE_URL,
+        )
+
+    # --------------------------------------------------------
+    # FALLBACK
+    # --------------------------------------------------------
+
+    if not new_items:
+
+        print()
+        print("Primary parser found nothing.")
+        print("Trying fallback...")
+
+        fallback_html = fetch(FALLBACK_URL)
+
+        if fallback_html:
+            new_items = parse_page(
+                fallback_html,
+                FALLBACK_URL,
+            )
+
+    # --------------------------------------------------------
+    # NOTHING PARSED
+    # --------------------------------------------------------
+
+    if not new_items:
+
+        print()
+        print("=" * 65)
+        print("NO NEW DATA COULD BE PARSED.")
+        print(
+            f"Keeping existing {len(old_items)} records."
+        )
+        print("=" * 65)
+
+        return
+
+    # --------------------------------------------------------
+    # MERGE
+    # --------------------------------------------------------
+
+    old_urls = {
+        clean(item.get("url", ""))
+        for item in old_items
+    }
+
+    merged_items = merge(
+        old_items,
+        new_items,
+    )
+
+    genuinely_new = [
+        item
+        for item in new_items
+        if clean(item.get("url", "")) not in old_urls
+    ]
+
+    save(merged_items)
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
+
+    print()
+    print("=" * 65)
+    print("RESULT")
+    print("=" * 65)
+
+    print(f"Old records:    {len(old_items)}")
+    print(f"Parsed records: {len(new_items)}")
+    print(f"Total records:  {len(merged_items)}")
+    print(f"Genuinely new:  {len(genuinely_new)}")
+
+    print()
+    print("LATEST RECORDS")
+    print("-" * 65)
+
+    for item in merged_items[:10]:
+
+        print(
+            f"{item.get('date', '')} | "
+            f"{item.get('title', '')[:150]}"
+        )
+
+        print(
+            f"URL: {item.get('url', '')}"
+        )
+
+        print("-" * 65)
+
+    print("CHECK COMPLETE")
+    print("=" * 65)
+
+
+if __name__ == "__main__":
+    main()
